@@ -52,7 +52,6 @@ function InnerHomePage({ current_identity }: { current_identity: ShowIdentityKey
         }
         return canisters;
     }, [current_tokens]);
-    const [ic_balances] = useTokenBalanceIcByRefreshing(current_identity.address.ic?.owner, canisters, 15000);
     const all_ic_prices = useTokenPriceIcRead();
     const ic_prices = useMemo<[string | undefined, string | undefined][]>(
         () =>
@@ -62,6 +61,8 @@ function InnerHomePage({ current_identity }: { current_identity: ShowIdentityKey
             }),
         [canisters, all_ic_prices],
     );
+
+    const [ic_balances] = useTokenBalanceIcByRefreshing(current_identity.address.ic?.owner, canisters, 15000);
 
     const { usd, usd_changed, usd_changed_24h } = useMemo(() => {
         let usd = BigNumber(0);

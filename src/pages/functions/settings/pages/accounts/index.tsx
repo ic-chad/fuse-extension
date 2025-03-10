@@ -7,6 +7,7 @@ import { useCurrentState } from '~hooks/memo/current_state';
 import { useGoto } from '~hooks/memo/goto';
 import { useIdentityKeys } from '~hooks/store/local-secure';
 import { useSonnerToast } from '~hooks/toast';
+import { cn } from '~lib/utils/cn';
 import { AddWalletDrawer } from '~pages/functions/switch/components/add-wallet-drawer';
 
 import { FunctionHeader } from '../../../components/header';
@@ -42,7 +43,10 @@ function FunctionSettingsAccountsPage() {
                             {(identity_list ?? []).map((identity) => (
                                 <div
                                     key={identity.id}
-                                    className="mt-3 block w-full cursor-pointer rounded-xl bg-[#181818] p-4 duration-300 hover:bg-[#2B2B2B]"
+                                    className={cn(
+                                        `mt-3 block w-full cursor-pointer rounded-xl border border-[#181818] bg-[#181818] p-3 duration-300 hover:bg-[#2B2B2B]`,
+                                        identity.id === current_identity && 'border-[#FFCF13]',
+                                    )}
                                     onClick={() => navigate(`/home/settings/accounts/${identity.id}`)}
                                 >
                                     <div className="flex items-center justify-between">
@@ -64,12 +68,13 @@ function FunctionSettingsAccountsPage() {
                                                 {identity.icon}
                                             </div>
                                             <span className="pl-3 text-sm">{identity.name}</span>
+                                            {identity.id === current_identity && (
+                                                <span className="ml-3 rounded-full bg-[#333333] px-2 py-[2px] text-xs">
+                                                    CURRENT
+                                                </span>
+                                            )}
                                         </div>
-                                        {identity.id === current_identity && <div>CURRENT</div>}
-                                        <Icon
-                                            name="icon-arrow-right"
-                                            className="h-3 w-3 cursor-pointer text-[#999999]"
-                                        />
+                                        <Icon name="icon-move" className="h-4 w-4 text-[#999999]" />
                                     </div>
                                 </div>
                             ))}

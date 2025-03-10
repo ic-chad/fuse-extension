@@ -6,12 +6,14 @@ import { random_mnemonic } from '~lib/mnemonic';
 import { cn } from '~lib/utils/cn';
 
 function CreateMnemonicPage({
+    className,
     onBack,
     mnemonic12,
     setMnemonic12,
     setMnemonic24,
     onNext,
 }: {
+    className?: string;
     onBack: () => void;
     mnemonic12: string;
     setMnemonic12: (mnemonic: string) => void;
@@ -22,7 +24,7 @@ function CreateMnemonicPage({
     const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <div className="slide-in-right relative flex h-full w-full flex-col justify-between">
+        <div className={cn('relative flex h-full w-full flex-col justify-between', className)}>
             <div className="flex h-[58px] items-center justify-between px-5">
                 <div
                     onClick={() => {

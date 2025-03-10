@@ -1,11 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Icon from '~components/icon';
 import { FusePage } from '~components/layouts/page';
 import { FusePageTransition } from '~components/layouts/transition';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useGoto } from '~hooks/memo/goto';
-import { useTokenInfoCurrent, useTokenInfoCustom } from '~hooks/store/local';
+import {
+    useTokenBalanceIcByRefreshing,
+    useTokenInfoCurrent,
+    useTokenInfoCustom,
+    useTokenPriceIcRead,
+} from '~hooks/store/local';
+import { useCurrentIdentity } from '~hooks/store/local-secure';
 import { cn } from '~lib/utils/cn';
 import { FunctionHeader } from '~pages/functions/components/header';
 import {
@@ -15,7 +21,7 @@ import {
     TokenTag,
     type TokenInfo,
 } from '~types/tokens';
-import { get_token_logo, PRESET_ALL_TOKEN_INFO } from '~types/tokens/preset';
+import { PRESET_ALL_TOKEN_INFO } from '~types/tokens/preset';
 
 import { TransferShowToken } from './components/token_item';
 
@@ -31,6 +37,7 @@ const TABS: Tab[] = ['current', 'all', 'ck', 'sns', 'custom'];
 
 function FunctionTransferPage() {
     const current_state = useCurrentState();
+    const { current_identity } = useCurrentIdentity();
 
     const { setHide, goto: _goto, navigate } = useGoto();
 
@@ -46,42 +53,62 @@ function FunctionTransferPage() {
     const snsTokens = useMemo(() => PRESET_ALL_TOKEN_INFO.filter((t) => t.tags.includes(TokenTag.ChainIcSns)), []);
     const customTokens = useMemo(() => custom.map((t) => t.token), [custom]);
 
-    const tokens = useMemo<(TokenInfo & { id: string; current: boolean })[]>(() => {
-        return (() => {
-            const tokens: Record<Tab, TokenInfo[]> = {
-                current: currentTokens,
-                all: allTokens,
-                ck: ckTokens,
-                sns: snsTokens,
-                custom: customTokens,
-            };
-            return tokens[tab].map((t) => ({
-                ...t,
-                id: get_token_unique_id(t),
-                current: !!currentTokens.find((c) => is_same_token_info(c, t)),
-            }));
-        })().filter((t) => {
-            const s = search.trim().toLowerCase();
-            if (!s) return true;
-            return match_combined_token_info(t.info, {
-                ic: (ic) => 0 <= ic.name.toLowerCase().indexOf(s) || 0 <= ic.symbol.toLowerCase().indexOf(s),
-            });
-        });
-    }, [search, tab, currentTokens, allTokens, ckTokens, snsTokens, customTokens]);
+    const tab_tokens = useMemo(() => {
+        const tokens: Record<Tab, TokenInfo[]> = {
+            current: currentTokens,
+            all: allTokens,
+            ck: ckTokens,
+            sns: snsTokens,
+            custom: customTokens,
+        };
+        return tokens[tab].map((t) => ({
+            ...t,
+            id: get_token_unique_id(t),
+            current: !!currentTokens.find((c) => is_same_token_info(c, t)),
+        }));
+    }, [tab, currentTokens, allTokens, ckTokens, snsTokens, customTokens]);
 
-    const [logo_map, setLogoMap] = useState<Record<string, string>>({});
-    useEffect(() => {
-        const loads = tokens.filter((t) => !logo_map[t.id]);
-        if (loads.length === 0) return;
-        Promise.all(
-            loads.map(
-                async (token): Promise<[string, string | undefined]> => [token.id, await get_token_logo(token.info)],
-            ),
-        ).then((items) => {
-            for (const [id, icon] of items) if (icon !== undefined) logo_map[id] = icon;
-            setLogoMap({ ...logo_map });
-        });
-    }, [tokens, logo_map]);
+    const { tokens, canisters } = useMemo<{
+        tokens: (TokenInfo & { id: string; current: boolean })[];
+        canisters: string[];
+    }>(() => {
+        const tokens: (TokenInfo & { id: string; current: boolean })[] = [];
+        const canisters: string[] = [];
+
+        for (const token of tab_tokens) {
+            match_combined_token_info(token.info, {
+                ic: (ic) => {
+                    const s = search.trim().toLowerCase();
+
+                    if (
+                        !s ||
+                        (s && (0 <= ic.name.toLowerCase().indexOf(s) || 0 <= ic.symbol.toLowerCase().indexOf(s)))
+                    ) {
+                        tokens.push({
+                            ...token,
+                            id: get_token_unique_id(token),
+                            current: !!currentTokens.find((c) => is_same_token_info(c, token)),
+                        });
+                        canisters.push(ic.canister_id);
+                    }
+                },
+            });
+        }
+
+        return { tokens, canisters };
+    }, [tab_tokens, currentTokens, search]);
+
+    const all_ic_prices = useTokenPriceIcRead();
+    const ic_prices = useMemo<[string | undefined, string | undefined][]>(
+        () =>
+            canisters.map((canister_id) => {
+                const price = all_ic_prices[canister_id];
+                return [price?.price, price?.price_change_24h];
+            }),
+        [canisters, all_ic_prices],
+    );
+
+    const [ic_balances] = useTokenBalanceIcByRefreshing(current_identity?.address.ic?.owner, canisters, 15000);
 
     return (
         <FusePage current_state={current_state} options={{ refresh_token_info_ic_sleep: 1000 * 60 * 10 }}>
@@ -125,6 +152,9 @@ function FunctionTransferPage() {
                                     typeof path === 'number' ? navigate(path) : navigate(path, options)
                                 }
                                 token={token}
+                                canisters={canisters}
+                                ic_balances={ic_balances}
+                                ic_prices={ic_prices}
                             />
                         ))}
                     </div>

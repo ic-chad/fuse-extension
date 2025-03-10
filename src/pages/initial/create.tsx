@@ -62,34 +62,55 @@ function InnerCreatePage({ wt, extra }: { wt: WindowType; extra?: boolean }) {
         }
     }, [extra, password1, current_mnemonic, restoreAccountByMnemonic, pushIdentity, wt, navigate]);
 
+    const [password_class, setPasswordClass] = useState<'slide-in-right' | 'slide-in-left'>('slide-in-right');
+    const [mnemonic_class, setMnemonicClass] = useState<'slide-in-right' | 'slide-in-left'>('slide-in-right');
+    const [verification_class, setVerificationClass] = useState<'slide-in-right' | 'slide-in-left'>('slide-in-right');
+
     return (
         <FusePage current_state={current_state} states={extra ? CurrentState.ALIVE : CurrentState.INITIAL}>
             {state === 'password' && (
                 <InputPasswordPage
+                    className={password_class}
                     onBack={() => navigate(-1)}
                     password1={password1}
                     setPassword1={setPassword1}
                     password2={password2}
                     setPassword2={setPassword2}
-                    onNext={() => setState('mnemonic')}
+                    onNext={() => {
+                        setMnemonicClass('slide-in-right');
+                        setState('mnemonic');
+                    }}
                 />
             )}
             {state === 'mnemonic' && (
                 <CreateMnemonicPage
-                    onBack={() => (extra ? navigate(-1) : setState('password'))}
+                    className={mnemonic_class}
+                    onBack={() => {
+                        if (extra) {
+                            navigate(-1);
+                        } else {
+                            setPasswordClass('slide-in-left');
+                            setState('password');
+                        }
+                    }}
                     mnemonic12={mnemonic12}
                     setMnemonic12={setMnemonic12}
                     mnemonic24={mnemonic24}
                     setMnemonic24={setMnemonic24}
                     onNext={(mnemonic) => {
                         setCurrentMnemonic(mnemonic);
+                        setVerificationClass('slide-in-right');
                         setState('verification');
                     }}
                 />
             )}
             {state === 'verification' && (
                 <CreateVerificationPage
-                    onBack={() => setState('mnemonic')}
+                    className={verification_class}
+                    onBack={() => {
+                        setMnemonicClass('slide-in-left');
+                        setState('mnemonic');
+                    }}
                     mnemonic={current_mnemonic}
                     onNext={onCompleted}
                 />

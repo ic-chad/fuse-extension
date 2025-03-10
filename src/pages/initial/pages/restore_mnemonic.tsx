@@ -6,12 +6,14 @@ import { validate_mnemonic } from '~lib/mnemonic';
 import { cn } from '~lib/utils/cn';
 
 function RestoreMnemonicPage({
+    className,
     onBack,
     mnemonic,
     setMnemonic,
     onNext,
     isLoading = false,
 }: {
+    className?: string;
     onBack: () => void;
     mnemonic: string;
     setMnemonic: (mnemonic: string) => void;
@@ -65,7 +67,7 @@ function RestoreMnemonicPage({
     // }, [handleMnemonic]);
 
     return (
-        <div className="slide-in-right flex h-full w-full flex-col justify-between px-5">
+        <div className={cn('flex h-full w-full flex-col justify-between px-5', className)}>
             <div className="flex h-[58px] items-center justify-between">
                 <div className="flex items-center" onClick={onBack}>
                     <Icon

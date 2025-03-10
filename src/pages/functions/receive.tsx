@@ -1,4 +1,5 @@
 import { QRCodeSVG } from 'qrcode.react';
+import { useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
 
 import ic_svg from '~assets/svg/chains/ic.min.svg';
@@ -18,7 +19,7 @@ function FunctionReceivePage() {
     const { setHide, goto } = useGoto();
 
     const { current_identity } = useCurrentIdentity();
-
+    const [activeTab, setActiveTab] = useState<'principal' | 'account'>('principal');
     return (
         <FusePage current_state={current_state}>
             <FusePageTransition setHide={setHide}>
@@ -30,6 +31,20 @@ function FunctionReceivePage() {
                     />
 
                     <div className="h-full w-full flex-1 overflow-y-auto px-5">
+                        <div className="mx-auto mt-5 grid w-[220px] grid-cols-2 rounded-full bg-[#181818] p-1">
+                            <span
+                                className={`w-full cursor-pointer rounded-full py-2 text-center text-sm transition-all duration-300 ${activeTab === 'principal' ? 'bg-[#333333]' : 'text-[#999999]'}`}
+                                onClick={() => setActiveTab('principal')}
+                            >
+                                Principal ID
+                            </span>
+                            <span
+                                className={`w-full cursor-pointer rounded-full py-2 text-center text-sm transition-all duration-300 ${activeTab === 'account' ? 'bg-[#333333]' : 'text-[#999999]'}`}
+                                onClick={() => setActiveTab('account')}
+                            >
+                                Account ID
+                            </span>
+                        </div>
                         <div className="flex justify-center py-10">
                             {current_identity?.address?.ic?.owner && (
                                 <div className="relative h-[160px] w-[160px] overflow-hidden rounded-xl bg-white">
@@ -43,51 +58,55 @@ function FunctionReceivePage() {
                                 </div>
                             )}
                         </div>
-                        <div className="w-full rounded-xl bg-[#181818] px-3">
-                            {current_identity?.address?.ic?.account_id && (
-                                <div className="w-full border-b border-[#333333] py-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-[#999999]">Account ID</span>
-                                        <CopyToClipboard
-                                            text={current_identity?.address?.ic?.account_id}
-                                            onCopy={() => {
-                                                showToast('Copied', 'success');
-                                            }}
-                                        >
-                                            <div className="flex cursor-pointer items-center text-sm text-[#FFCF13] duration-300 hover:opacity-85">
-                                                <Icon name="icon-copy" className="mr-2 h-3 w-3" />
-                                                Copy
-                                            </div>
-                                        </CopyToClipboard>
+                        {activeTab === 'principal' ? (
+                            <div className="w-full rounded-xl bg-[#181818] px-3">
+                                {current_identity?.address?.ic?.owner && (
+                                    <div className="w-full py-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-[#999999]">Principal ID</span>
+                                            <CopyToClipboard
+                                                text={current_identity?.address?.ic?.owner}
+                                                onCopy={() => {
+                                                    showToast('Copied', 'success');
+                                                }}
+                                            >
+                                                <div className="flex cursor-pointer items-center text-sm text-[#FFCF13] duration-300 hover:opacity-85">
+                                                    <Icon name="icon-copy" className="mr-2 h-3 w-3" />
+                                                    Copy
+                                                </div>
+                                            </CopyToClipboard>
+                                        </div>
+                                        <p className="block w-full break-words py-2 text-sm">
+                                            {current_identity?.address?.ic?.owner}
+                                        </p>
                                     </div>
-                                    <p className="block w-full break-words py-2 text-sm">
-                                        {current_identity?.address?.ic?.account_id}
-                                    </p>
-                                </div>
-                            )}
-
-                            {current_identity?.address?.ic?.owner && (
-                                <div className="w-full py-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-[#999999]">Principal ID</span>
-                                        <CopyToClipboard
-                                            text={current_identity?.address?.ic?.owner}
-                                            onCopy={() => {
-                                                showToast('Copied', 'success');
-                                            }}
-                                        >
-                                            <div className="flex cursor-pointer items-center text-sm text-[#FFCF13] duration-300 hover:opacity-85">
-                                                <Icon name="icon-copy" className="mr-2 h-3 w-3" />
-                                                Copy
-                                            </div>
-                                        </CopyToClipboard>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="w-full rounded-xl bg-[#181818] px-3">
+                                {current_identity?.address?.ic?.account_id && (
+                                    <div className="w-full py-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-[#999999]">Account ID</span>
+                                            <CopyToClipboard
+                                                text={current_identity?.address?.ic?.account_id}
+                                                onCopy={() => {
+                                                    showToast('Copied', 'success');
+                                                }}
+                                            >
+                                                <div className="flex cursor-pointer items-center text-sm text-[#FFCF13] duration-300 hover:opacity-85">
+                                                    <Icon name="icon-copy" className="mr-2 h-3 w-3" />
+                                                    Copy
+                                                </div>
+                                            </CopyToClipboard>
+                                        </div>
+                                        <p className="block w-full break-words py-2 text-sm">
+                                            {current_identity?.address?.ic?.account_id}
+                                        </p>
                                     </div>
-                                    <p className="block w-full break-words py-2 text-sm">
-                                        {current_identity?.address?.ic?.owner}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </FusePageTransition>

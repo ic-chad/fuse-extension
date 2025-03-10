@@ -69,6 +69,10 @@ function CreateRestorePage({ wt, extra }: { wt: WindowType; extra?: boolean }) {
         throw new Error('unimplemented');
     }, []);
 
+    const [way_class, setWayClass] = useState<'slide-in-right' | 'slide-in-left'>('slide-in-right');
+    const [middle_class, setMiddleClass] = useState<'slide-in-right' | 'slide-in-left'>('slide-in-right');
+    const [password_class, setPasswordClass] = useState<'slide-in-right' | 'slide-in-left'>('slide-in-right');
+
     return (
         <FusePage
             current_state={current_state}
@@ -77,9 +81,11 @@ function CreateRestorePage({ wt, extra }: { wt: WindowType; extra?: boolean }) {
             {/* Import Wallet - Select the way to import the wallet */}
             {state === 'way' && (
                 <RestoreWayPage
+                    className={way_class}
                     onBack={() => navigate(-1)}
                     onNext={(way) => {
                         setLastState(way);
+                        setMiddleClass('slide-in-right');
                         setState(way);
                     }}
                 />
@@ -88,25 +94,51 @@ function CreateRestorePage({ wt, extra }: { wt: WindowType; extra?: boolean }) {
             {/* Import wallet - Mnemonics */}
             {state === 'mnemonic' && (
                 <RestoreMnemonicPage
-                    onBack={() => setState('way')}
+                    className={middle_class}
+                    onBack={() => {
+                        setWayClass('slide-in-left');
+                        setState('way');
+                    }}
                     mnemonic={mnemonic}
                     setMnemonic={setMnemonic}
-                    onNext={() => (extra ? onMnemonicCompleted() : setState('password'))}
+                    onNext={() => {
+                        if (extra) {
+                            onMnemonicCompleted();
+                        } else {
+                            setPasswordClass('slide-in-right');
+                            setState('password');
+                        }
+                    }}
                 />
             )}
 
             {/* Import the wallet - private key */}
             {state === 'private_key' && (
                 <RestorePrivateKeyPage
-                    onBack={() => setState('way')}
-                    onNext={() => (extra ? onPrivateKeyCompleted() : setState('password'))}
+                    className={middle_class}
+                    onBack={() => {
+                        setWayClass('slide-in-left');
+                        setState('way');
+                    }}
+                    onNext={() => {
+                        if (extra) {
+                            onPrivateKeyCompleted();
+                        } else {
+                            setPasswordClass('slide-in-right');
+                            setState('password');
+                        }
+                    }}
                 />
             )}
 
             {/* Password Creation Wallet */}
             {state === 'password' && (
                 <InputPasswordPage
-                    onBack={() => setState(last_state ?? 'way')}
+                    className={password_class}
+                    onBack={() => {
+                        setMiddleClass('slide-in-left');
+                        setState(last_state ?? 'way');
+                    }}
                     password1={password1}
                     setPassword1={setPassword1}
                     password2={password2}

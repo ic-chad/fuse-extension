@@ -2,19 +2,22 @@ import { Button } from '@heroui/react';
 import { useState } from 'react';
 
 import Icon from '~components/icon';
+import { cn } from '~lib/utils/cn';
 
 function RestorePrivateKeyPage({
+    className,
     onBack,
     onNext,
     isLoading,
 }: {
+    className?: string;
     onBack: () => void;
     onNext: () => void;
     isLoading?: boolean;
 }) {
     const [privateKey, setPrivateKey] = useState('');
     return (
-        <div className="slide-in-right flex h-full w-full flex-col justify-between">
+        <div className={cn('flex h-full w-full flex-col justify-between', className)}>
             <div className="flex h-[58px] items-center justify-between px-5">
                 <div className="flex items-center" onClick={onBack}>
                     <Icon

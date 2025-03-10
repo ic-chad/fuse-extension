@@ -14,10 +14,12 @@ interface VerificationQuestion {
 }
 
 function CreateVerificationPage({
+    className,
     onBack,
     mnemonic,
     onNext,
 }: {
+    className?: string;
     onBack: () => void;
     mnemonic: string;
     onNext: () => void;
@@ -93,7 +95,7 @@ function CreateVerificationPage({
     // }, [questions, answers, chosen]);
 
     return (
-        <div className="slide-in-right relative flex h-full w-full flex-col justify-between">
+        <div className={cn('relative flex h-full w-full flex-col justify-between', className)}>
             <div className="flex h-[58px] items-center justify-between px-5">
                 <div onClick={onBack}>
                     <Icon
@@ -144,11 +146,13 @@ function CreateVerificationPage({
                         </div>
                     </div>
 
-                    {chosen && (
-                        <Button className="h-[48px] bg-[#FFCF13] text-lg font-semibold text-black" onPress={onConfirm}>
-                            Confirm
-                        </Button>
-                    )}
+                    <Button
+                        className="h-[48px] bg-[#FFCF13] text-lg font-semibold text-black"
+                        isDisabled={!chosen}
+                        onPress={onConfirm}
+                    >
+                        Confirm
+                    </Button>
                 </div>
             )}
         </div>

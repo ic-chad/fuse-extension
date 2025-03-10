@@ -80,20 +80,6 @@ function FunctionTokenViewPage() {
         });
     }, [search, tab, currentTokens, allTokens, ckTokens, snsTokens, customTokens]);
 
-    const [logo_map, setLogoMap] = useState<Record<string, string>>({});
-    useEffect(() => {
-        const loads = tokens.filter((t) => !logo_map[t.id]);
-        if (loads.length === 0) return;
-        Promise.all(
-            loads.map(
-                async (token): Promise<[string, string | undefined]> => [token.id, await get_token_logo(token.info)],
-            ),
-        ).then((items) => {
-            for (const [id, icon] of items) if (icon !== undefined) logo_map[id] = icon;
-            setLogoMap({ ...logo_map });
-        });
-    }, [tokens, logo_map]);
-
     const [sort, setSort] = useState(false);
 
     const onSwitchToken = useCallback(
@@ -247,7 +233,6 @@ function FunctionTokenViewPage() {
                                                                 tab={tab}
                                                                 sort={sort}
                                                                 token={token}
-                                                                icon={logo_map[token.id]}
                                                                 onSwitchToken={onSwitchToken}
                                                                 onDeleteCustomToken={(token) => {
                                                                     if (
@@ -284,7 +269,6 @@ const ShowTokenItem = ({
     tab,
     sort,
     token,
-    icon,
     onSwitchToken,
     onDeleteCustomToken,
     container,
@@ -292,15 +276,18 @@ const ShowTokenItem = ({
     tab: Tab;
     sort: boolean;
     token: TokenInfo & { id: string; current: boolean };
-    icon: string | undefined;
     onSwitchToken: (token: TokenInfo & { current: boolean }, selected: boolean) => void;
     onDeleteCustomToken: (token: TokenInfo) => void;
     container?: HTMLElement | null;
 }) => {
+    const [logo, setLogo] = useState<string>();
+    useEffect(() => {
+        get_token_logo(token.info).then(setLogo);
+    }, [token]);
     return (
         <div className="flex w-full cursor-pointer items-center justify-between rounded-xl bg-[#181818] p-[10px] transition duration-300 hover:bg-[#2B2B2B]">
             <div className="flex items-center">
-                <img src={icon} className="h-10 w-10 rounded-full" />
+                <img src={logo} className="h-10 w-10 rounded-full" />
                 <div className="ml-[10px]">
                     <strong className="block text-base text-[#EEEEEE]">{get_token_symbol(token)}</strong>
                     <span className="text-xs text-[#999999]"> {get_token_name(token)}</span>

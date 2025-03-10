@@ -1,5 +1,5 @@
 import { Button } from '@heroui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Icon from '~components/icon';
 import {
@@ -15,7 +15,7 @@ import { check_address_type, type ChainAddress, type MarkedAddress } from '~type
 
 export const AddAddressDrawer = ({
     onAddAddress,
-    // trigger,
+    trigger,
     container,
 }: {
     onAddAddress: (address: ChainAddress, name: string) => void;
@@ -50,17 +50,7 @@ export const AddAddressDrawer = ({
 
     return (
         <Drawer open={open} onOpenChange={setOpen} container={container}>
-            <DrawerTrigger>
-                {/* {trigger} */}
-                <div className="w-full p-5">
-                    <Button
-                        className="h-[48px] w-full bg-[#FFCF13] text-lg font-semibold text-black"
-                        onPress={() => setOpen(true)}
-                    >
-                        Add
-                    </Button>
-                </div>
-            </DrawerTrigger>
+            <DrawerTrigger>{trigger}</DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader className="border-t border-[#333333] bg-[#0a0600] text-left">
                     <DrawerTitle>
@@ -131,7 +121,7 @@ export const AddAddressDrawer = ({
 };
 
 export const EditAddressDrawer = ({
-    isOpen,
+    // isOpen,
     isRecent = false, // recent address or custom address
     initAddress,
     onEditAddress,
@@ -140,25 +130,41 @@ export const EditAddressDrawer = ({
     // trigger,
     container,
 }: {
-    isOpen: boolean;
+    // isOpen: boolean;
     isRecent?: boolean;
-    initAddress: MarkedAddress;
+    initAddress?: MarkedAddress;
     onEditAddress: (address: ChainAddress, name: string) => void;
     onClose: () => void;
     onOpenDelete: () => void;
     trigger?: React.ReactNode;
     container?: HTMLElement | null;
 }) => {
-    const [open, setOpen] = useState(isOpen);
-    const [addrName, setAddrName] = useState<string>(initAddress.name);
-    const [customAddress, setCustomAddress] = useState<string>(initAddress.address.address);
+    const [open, setOpen] = useState<boolean>(false);
+    const [addrName, setAddrName] = useState<string>();
+    const [customAddress, setCustomAddress] = useState<string>();
     const [showError, setShowError] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!initAddress) {
+            setOpen(false);
+            setAddrName('');
+            setCustomAddress('');
+            setShowError(false);
+            return;
+        }
+
+        setOpen(true);
+        setAddrName(initAddress.name);
+        setCustomAddress(initAddress.address.address);
+    }, [initAddress]);
 
     const handleEditAddress = () => {
         try {
+            if (!customAddress || !addrName) return;
+
             // check address type
             const address_type = check_address_type(customAddress);
-            console.log('🚀 ~ handleAddAddress ~ address_type:', address_type);
+            console.debug('🚀 ~ handleAddAddress ~ address_type:', address_type);
 
             if (!address_type) {
                 setShowError(true);
@@ -167,13 +173,17 @@ export const EditAddressDrawer = ({
 
             // add mark address
             onEditAddress({ address: customAddress, type: address_type }, addrName);
-            setOpen(false);
-            onClose();
+            onHide();
         } catch (error) {
             setShowError(true);
             // remove prod
             console.debug('🚀 ~ handleAddAddress ~ error:', error);
         }
+    };
+
+    const onHide = () => {
+        setOpen(false);
+        onClose();
     };
 
     return (
@@ -185,7 +195,7 @@ export const EditAddressDrawer = ({
                             <span className="text-sm">Edit Address</span>
                             <span
                                 className="cursor-pointer text-sm text-[#FFCF13] transition duration-300 hover:opacity-85"
-                                onClick={() => onClose()}
+                                onClick={() => onHide()}
                             >
                                 Close
                             </span>

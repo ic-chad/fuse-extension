@@ -1,16 +1,16 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 
-import Icon from '~components/icon';
 import { FusePage } from '~components/layouts/page';
 import { FusePageTransition } from '~components/layouts/transition';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useGoto } from '~hooks/memo/goto';
+import { useTokenInfoCurrentRead, useTokenPriceIcRead } from '~hooks/store/local';
 import { useIdentityKeys } from '~hooks/store/local-secure';
 import { useSonnerToast } from '~hooks/toast';
-import { cn } from '~lib/utils/cn';
-import { format_number } from '~lib/utils/number';
+import { match_combined_token_info } from '~types/tokens';
 
 import { FunctionHeader } from '../components/header';
+import { AccountItem } from './components/account-item';
 import { AddWalletDrawer } from './components/add-wallet-drawer';
 
 function FunctionSwitchAccountPage() {
@@ -19,11 +19,31 @@ function FunctionSwitchAccountPage() {
     const current_state = useCurrentState();
     const { setHide, goto: _goto } = useGoto();
 
-    const { current_identity, main_mnemonic_identity, identity_list, switchIdentity, pushIdentityByMainMnemonic } =
-        useIdentityKeys();
+    const { current_identity, main_mnemonic_identity, identity_list, pushIdentityByMainMnemonic } = useIdentityKeys();
+
+    const current_tokens = useTokenInfoCurrentRead();
+
+    const canisters = useMemo(() => {
+        const canisters: string[] = [];
+        for (const token of current_tokens) {
+            match_combined_token_info(token.info, {
+                ic: (ic) => canisters.push(ic.canister_id),
+            });
+        }
+        return canisters;
+    }, [current_tokens]);
+
+    const all_ic_prices = useTokenPriceIcRead();
+    const ic_prices = useMemo<[string | undefined, string | undefined][]>(
+        () =>
+            canisters.map((canister_id) => {
+                const price = all_ic_prices[canister_id];
+                return [price?.price, price?.price_change_24h];
+            }),
+        [canisters, all_ic_prices],
+    );
 
     const ref = useRef<HTMLDivElement>(null);
-
     return (
         <FusePage current_state={current_state} options={{ refresh_token_info_ic_sleep: 1000 * 60 * 5 }}>
             <div ref={ref} className="relative h-full w-full overflow-hidden">
@@ -34,36 +54,14 @@ function FunctionSwitchAccountPage() {
                         <div className="flex h-full w-full flex-col justify-between">
                             <div className="flex w-full flex-1 flex-col gap-y-4 overflow-y-auto px-5 pb-5 pt-5">
                                 {(identity_list ?? []).map((wallet) => (
-                                    <div
+                                    <AccountItem
                                         key={wallet.id}
-                                        className={cn(
-                                            `flex w-full cursor-pointer items-center justify-between rounded-xl border border-[#181818] bg-[#181818] px-4 py-3 duration-300 hover:bg-[#2B2B2B]`,
-                                            wallet.id === current_identity && 'border-[#FFCF13]',
-                                        )}
-                                        onClick={() => {
-                                            if (current_identity !== wallet.id) {
-                                                switchIdentity(wallet.id).then((r) => {
-                                                    if (r === undefined) return;
-                                                    if (r === false) throw Error('switch identity failed');
-                                                    // notice successful
-                                                });
-                                            }
-                                        }}
-                                    >
-                                        <div className="flex items-center">
-                                            <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-[#333333] p-2 text-2xl">
-                                                {wallet.icon}
-                                            </div>
-                                            <div className="ml-3 flex flex-col">
-                                                <span className="text-base">{wallet.name}</span>
-                                                {/* TODO: wallet amount */}
-                                                <span className="text-sm text-[#FFCF13]">${format_number('0.00')}</span>
-                                            </div>
-                                        </div>
-                                        {wallet.id === current_identity && (
-                                            <Icon name="icon-ok" className="h-5 w-5 text-[#FFCF13]" />
-                                        )}
-                                    </div>
+                                        wallet={wallet}
+                                        current_identity={current_identity}
+                                        canisters={canisters}
+                                        current_tokens={current_tokens}
+                                        ic_prices={ic_prices}
+                                    />
                                 ))}
                             </div>
 

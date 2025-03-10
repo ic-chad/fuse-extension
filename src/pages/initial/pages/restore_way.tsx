@@ -4,12 +4,20 @@ import { useState } from 'react';
 import Icon from '~components/icon';
 import { useSonnerToast } from '~hooks/toast';
 
-function RestoreWayPage({ onBack, onNext }: { onBack: () => void; onNext: (way: 'mnemonic' | 'private_key') => void }) {
+function RestoreWayPage({
+    className,
+    onBack,
+    onNext,
+}: {
+    className?: string;
+    onBack: () => void;
+    onNext: (way: 'mnemonic' | 'private_key') => void;
+}) {
     const toast = useSonnerToast();
 
     const [selected, setSelected] = useState<'mnemonic' | 'private_key'>();
     return (
-        <div className="slide-in-right flex h-full w-full flex-col justify-between">
+        <div className={cn('flex h-full w-full flex-col justify-between', className)}>
             <div className="flex h-[58px] items-center px-5" onClick={onBack}>
                 <Icon
                     name="icon-arrow-left"

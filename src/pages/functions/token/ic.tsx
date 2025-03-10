@@ -97,7 +97,7 @@ const InnerPage = ({ canister_id, navigate }: { canister_id: string; navigate: N
                         callback: () => {
                             toast.info('not implemented');
                         },
-                        icon: 'icon-historys',
+                        icon: 'icon-history',
                         name: 'History',
                     },
                 ].map(({ callback, icon, name }) => (

@@ -4,8 +4,10 @@ import { useMemo } from 'react';
 import Icon from '~components/icon';
 import InputPassword from '~components/input-password';
 import { check_password } from '~lib/password';
+import { cn } from '~lib/utils/cn';
 
 function InputPasswordPage({
+    className,
     onBack,
     password1,
     setPassword1,
@@ -13,6 +15,7 @@ function InputPasswordPage({
     setPassword2,
     onNext,
 }: {
+    className?: string;
     onBack: () => void;
     password1: string;
     setPassword1: (password1: string) => void;
@@ -22,7 +25,7 @@ function InputPasswordPage({
 }) {
     const valid = useMemo(() => check_password(password1), [password1]);
     return (
-        <div className="slide-in-right flex h-full w-full flex-col justify-between p-5">
+        <div className={cn('flex h-full w-full flex-col justify-between p-5', className)}>
             <div className="flex items-center" onClick={onBack}>
                 <Icon
                     name="icon-arrow-left"

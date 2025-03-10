@@ -91,10 +91,6 @@ h4 {
     background: #666666;
 }
 
-.slide-in-right {
-    animation: slide-in-right 0.3s forwards;
-}
-
 .bg-content1 {
     background: #181818;
 }
@@ -107,9 +103,25 @@ button[aria-label='Close']:hover {
     background-color: #222222 !important;
 }
 
-@keyframes slide-in-right {
+.slide-in-right {
+    animation: slide-in-right-animation 0.3s forwards;
+}
+@keyframes slide-in-right-animation {
     from {
         transform: translateX(50%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+.slide-in-left {
+    animation: slide-in-left-animation 0.3s forwards;
+}
+@keyframes slide-in-left-animation {
+    from {
+        transform: translateX(-50%);
         opacity: 0;
     }
     to {
@@ -142,20 +154,20 @@ button[aria-label='Close']:hover {
         opacity 300ms;
 }
 
-.fuse-page-left-enter {
+.fuse-page-right-enter {
     opacity: 0;
     transform: scale(0.9) translateX(50%);
 }
-.fuse-page-left-enter-active {
+.fuse-page-right-enter-active {
     opacity: 1;
     transform: scale(1) translateX(0%);
     transition: all 300ms ease-out;
 }
-.fuse-page-left-exit {
+.fuse-page-right-exit {
     opacity: 1;
     transform: scale(1) translateX(0%);
 }
-.fuse-page-left-exit-active {
+.fuse-page-right-exit-active {
     opacity: 0;
     transform: scale(0.9) translateX(50%);
     transition: all 300ms ease-out;
