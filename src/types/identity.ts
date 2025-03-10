@@ -24,6 +24,9 @@ export interface IdentityAddress {
         owner: string;
         account_id: string;
     };
+    evm?: {
+        address: string;
+    };
 }
 
 export interface PrivateKeys {

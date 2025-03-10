@@ -195,6 +195,11 @@ export const get_current_info = async (): Promise<CurrentInfo | undefined> => {
                   LOCAL_SECURE_KEY_CURRENT_CONNECTED_APPS(current_identity_network.ic),
               )) ?? [])
             : [],
+        evm: current_identity_network.evm
+            ? ((await storage.get<ConnectedApps>(
+                  LOCAL_SECURE_KEY_CURRENT_CONNECTED_APPS(current_identity_network.evm),
+              )) ?? [])
+            : [],
     };
 
     return {
@@ -214,7 +219,10 @@ export const set_current_connected_apps = async (
     const storage = await get_password_secure_storage();
     if (!storage) return undefined; // get secure storage after password
 
-    const identity_network = match_chain<IdentityNetwork | undefined>(chain, { ic: () => current_identity_network.ic });
+    const identity_network = match_chain<IdentityNetwork | undefined>(chain, {
+        ic: () => current_identity_network.ic,
+        evm: () => current_identity_network.evm,
+    });
     if (!identity_network) return;
 
     const key = LOCAL_SECURE_KEY_CURRENT_CONNECTED_APPS(identity_network);

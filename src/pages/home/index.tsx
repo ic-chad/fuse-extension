@@ -16,6 +16,7 @@ import { get_token_unique_id, match_combined_token_info } from '~types/tokens';
 import { AddressTooltip } from './components/address-tooltip';
 import { ShowSingleAddress } from './components/show-address';
 import { HomeShowToken } from './components/show-token';
+import { ChainSelector } from './components/chain-selector';
 
 function HomePage() {
     const current_state = useCurrentState();
@@ -170,6 +171,7 @@ function InnerHomePage({ current_identity }: { current_identity: ShowIdentityKey
                             />
                         </div>
                     ))}
+                    <ChainSelector />
                 </div>
             </div>
 

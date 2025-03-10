@@ -45,6 +45,8 @@ export const LOCAL_KEY_TOKEN_INFO_CURRENT = `${LOCAL_KEY_PREFIX_TOKEN}:info:curr
 export const LOCAL_KEY_TOKEN_PRICE_IC = `${LOCAL_KEY_PREFIX_TOKEN}:price:ic`; // * local
 export const LOCAL_KEY_TOKEN_PRICE_IC_UPDATED = `${LOCAL_KEY_PREFIX_TOKEN}:price:ic:updated`; // * local
 
+export const LOCAL_KEY_PREFIX_CURRENT_CHAIN_NETWORK = `${LOCAL_KEY_PREFIX}:current_chain_network`;
+
 const LOCAL_KEY_PREFIX_RECORD = `${LOCAL_KEY_PREFIX}:record`;
 export const LOCAL_KEY_RECORD_STARTED = (identity_network: IdentityNetwork) =>
     `${LOCAL_KEY_PREFIX_RECORD}:${get_identity_network_key(identity_network)}:started`; // * local

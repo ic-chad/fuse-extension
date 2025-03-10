@@ -38,7 +38,8 @@
         "subaccount",
         "testflight",
         "usehooks",
-        "vaul"
+        "vaul",
+        "viem"
     ],
     "nuxt.isNuxtApp": false
 }
