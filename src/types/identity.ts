@@ -4,6 +4,7 @@ import { same } from '~lib/utils/same';
 import type { Chain } from './chain';
 import type { IdentityKeyMnemonic, MnemonicParsed } from './keys/mnemonic';
 import type { IdentityKeyPrivate } from './keys/private_key';
+import type { ChainNetwork } from './network';
 
 export type IdentityId = string; // uuid
 
@@ -17,6 +18,7 @@ export interface IdentityKey {
     icon: string;
     key: CombinedIdentityKey;
     address: IdentityAddress;
+    current_chain_network: ChainNetwork;
 }
 
 export interface IdentityAddress {

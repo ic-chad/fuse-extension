@@ -2,8 +2,9 @@ import { FusePage } from '~components/layouts/page';
 import { FusePageTransition } from '~components/layouts/transition';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useGoto } from '~hooks/memo/goto';
+import { useIdentityKeys } from '~hooks/store/local-secure';
 import type { Chain } from '~types/chain';
-import { DEFAULT_CHAIN_NETWORKS, get_chain_network_logo } from '~types/network';
+import { DEFAULT_CHAIN_NETWORKS, get_chain_network_logo, is_same_chain_network } from '~types/network';
 
 import { FunctionHeader } from '../components/header';
 import ChainItem from './components';
@@ -11,6 +12,7 @@ import ChainItem from './components';
 export default function FunctionChainPage() {
     const current_state = useCurrentState();
     const { setHide, goto } = useGoto();
+    const { current_identity, switchChainNetwork, current_chain_network } = useIdentityKeys();
     return (
         <FusePage current_state={current_state}>
             <FusePageTransition setHide={setHide}>
@@ -24,7 +26,14 @@ export default function FunctionChainPage() {
                                         key={`${chain}-${network.name}`}
                                         name={network.name}
                                         logo={get_chain_network_logo(chain as Chain, network)}
-                                        active={true}
+                                        active={
+                                            !!current_chain_network &&
+                                            is_same_chain_network(current_chain_network, network)
+                                        }
+                                        onClick={() => {
+                                            if (!current_identity) return;
+                                            switchChainNetwork(current_identity, network);
+                                        }}
                                     />
                                 ))}
                             </div>

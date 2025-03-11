@@ -138,3 +138,7 @@ export const get_chain_network_logo = (chain: Chain, network: ChainNetwork): str
         evm: () => DEFAULT_CHAIN_NETWORKS_LOGO.evm[`${(network as ChainEvmNetwork).chainId}`],
     });
 };
+// check two chain network is same
+export const is_same_chain_network = (a: ChainNetwork, b: ChainNetwork): boolean => {
+    return a.chain === b.chain && a.name === b.name;
+};
