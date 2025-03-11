@@ -3,11 +3,12 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 
 import eth_svg from '~assets/svg/chains/eth.svg';
 import Icon from '~components/icon';
-import { showToast } from '~components/toast';
 import { useCurrentIdentity } from '~hooks/store/local-secure';
+import { useSonnerToast } from '~hooks/toast';
 
 export default function EVMReceivePage() {
     const { current_identity } = useCurrentIdentity();
+    const toast = useSonnerToast();
 
     return (
         <div className="h-full w-full flex-1 overflow-y-auto px-5">
@@ -31,7 +32,7 @@ export default function EVMReceivePage() {
                             <span className="text-sm text-[#999999]">Address</span>
                             <CopyToClipboard
                                 text={current_identity.address.evm.address}
-                                onCopy={() => showToast('Copied', 'success')}
+                                onCopy={() => toast.success('Copied')}
                             >
                                 <div className="flex cursor-pointer items-center text-sm text-[#FFCF13] duration-300 hover:opacity-85">
                                     <Icon name="icon-copy" className="mr-2 h-3 w-3" />

@@ -4,12 +4,13 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 
 import ic_svg from '~assets/svg/chains/ic.min.svg';
 import Icon from '~components/icon';
-import { showToast } from '~components/toast';
 import { useCurrentIdentity } from '~hooks/store/local-secure';
+import { useSonnerToast } from '~hooks/toast';
 
 export default function ICReceivePage() {
     const { current_identity } = useCurrentIdentity();
     const [activeTab, setActiveTab] = useState<'principal' | 'account'>('principal');
+    const toast = useSonnerToast();
     return (
         <div className="h-full w-full flex-1 overflow-y-auto px-5">
             <div className="mx-auto mt-5 grid w-[220px] grid-cols-2 rounded-full bg-[#181818] p-1">
@@ -48,7 +49,7 @@ export default function ICReceivePage() {
                                 <CopyToClipboard
                                     text={current_identity?.address?.ic?.owner}
                                     onCopy={() => {
-                                        showToast('Copied', 'success');
+                                        toast.success('Copied');
                                     }}
                                 >
                                     <div className="flex cursor-pointer items-center text-sm text-[#FFCF13] duration-300 hover:opacity-85">
@@ -72,7 +73,7 @@ export default function ICReceivePage() {
                                 <CopyToClipboard
                                     text={current_identity?.address?.ic?.account_id}
                                     onCopy={() => {
-                                        showToast('Copied', 'success');
+                                        toast.success('Copied');
                                     }}
                                 >
                                     <div className="flex cursor-pointer items-center text-sm text-[#FFCF13] duration-300 hover:opacity-85">
