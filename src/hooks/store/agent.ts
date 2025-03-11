@@ -68,7 +68,6 @@ export const refresh_unique_evm_wallet_client = (
             const [, { evm }] = get_address_by_mnemonic_and_metadata(mnemonic.mnemonic, mnemonic.subaccount);
             const private_key = evm?.privateKey;
             if (private_key === undefined) return clean();
-            console.debug('🚀 ~ private_key:', bytesToHex(private_key));
             const walletClient = createWalletClient({
                 account: privateKeyToAccount(bytesToHex(private_key)),
                 chain: current_chain_network.viemChain,
