@@ -78,18 +78,26 @@ export const DEFAULT_CURRENT_CHAIN_NETWORK: CurrentChainNetwork = {
 // =================== chain identity network ===================
 
 export interface ChainIcIdentityNetwork {
-    chain: 'ic';
+    chain: Extract<Chain, 'ic'>;
     owner: string;
     network: ChainIcNetwork;
 }
 
 export interface ChainEvmIdentityNetwork {
-    chain: 'evm';
-    address: string;
+    chain: Extract<Chain, 'evm'>;
+    address: `0x${string}`;
     network: ChainEvmNetwork;
 }
 
 export type IdentityNetwork = ChainIcIdentityNetwork | ChainEvmIdentityNetwork;
+
+// define type guard functions
+export const isEvmNetwork = (network: IdentityNetwork | undefined): network is ChainEvmIdentityNetwork => {
+    return !!network && network.chain === 'evm';
+};
+export const isIcNetwork = (network: IdentityNetwork | undefined): network is ChainIcIdentityNetwork => {
+    return !!network && network.chain === 'ic';
+};
 
 export const get_identity_network_key = (identity_network: IdentityNetwork): string => {
     return match_chain(identity_network.chain, {
@@ -111,8 +119,8 @@ export const get_evm_network_by_chain_id = (chainId: number): ChainEvmNetwork | 
 
 // current
 export interface CurrentIdentityNetwork {
-    ic?: ChainIcIdentityNetwork;
-    evm?: ChainEvmIdentityNetwork;
+    ic: ChainIcIdentityNetwork;
+    evm: ChainEvmIdentityNetwork;
 }
 
 // Helper function to check if a network is a testnet

@@ -6,6 +6,7 @@ import { verify_password } from '~lib/password';
 import { random_account_icon } from '~lib/utils/account_icon';
 import { same } from '~lib/utils/same';
 import { resort_list, type ResortFunction } from '~lib/utils/sort';
+import { match_chain } from '~types/chain';
 import {
     is_same_combined_identity_key,
     match_combined_identity_key,
@@ -136,7 +137,12 @@ export const useIdentityKeysBy = (
                 return undefined; // can not delete main account
             }
             const new_keys = private_keys.keys.filter((i) => i.id !== id);
-            await setPrivateKeys({ mnemonic: private_keys.mnemonic, current: private_keys.current, keys: new_keys });
+            await setPrivateKeys({
+                mnemonic: private_keys.mnemonic,
+                current: private_keys.current,
+                current_identity_network: private_keys.current_identity_network,
+                keys: new_keys,
+            });
             return true;
         },
         [password_hashed, private_keys, setPrivateKeys],
@@ -169,6 +175,14 @@ export const useIdentityKeysBy = (
             await setPrivateKeys({
                 mnemonic: private_keys.mnemonic,
                 current: id, // ? change to current ?
+                current_identity_network: {
+                    ...private_keys.current_identity_network,
+                    ic: {
+                        chain: 'ic',
+                        network: CHAIN_IC_MAINNET,
+                        owner: new_keys[new_keys.length - 1].address.ic.owner,
+                    }, // ? default ic
+                },
                 keys: new_keys,
             });
             return true;
@@ -230,6 +244,7 @@ export const useIdentityKeysBy = (
                 await setPrivateKeys({
                     mnemonic: private_keys.mnemonic,
                     current: private_keys.current,
+                    current_identity_network: private_keys.current_identity_network,
                     keys: [...private_keys.keys],
                 });
             }
@@ -245,12 +260,26 @@ export const useIdentityKeysBy = (
             if (!private_keys) return undefined;
             const identity = private_keys.keys.find((i) => i.id === id);
             if (!identity) return undefined; // can not find account
+            if (!identity.current_chain_network) return undefined; // can not find current chain network
             if (identity.id === private_keys.current) return true;
-
+            const chain = identity.current_chain_network.chain;
             await setPrivateKeys({
                 mnemonic: private_keys.mnemonic,
                 current: identity.id,
                 keys: [...private_keys.keys],
+                current_identity_network: {
+                    ...private_keys.current_identity_network,
+                    [chain]: {
+                        chain,
+                        network: identity.current_chain_network,
+                        ...match_chain<{ owner: string } | { address: `0x${string}` }>(chain, {
+                            ic: () => ({
+                                owner: identity.address.ic.owner,
+                            }),
+                            evm: () => ({ address: identity.address.evm.address }),
+                        }),
+                    },
+                },
             });
 
             return true;
@@ -281,7 +310,22 @@ export const useIdentityKeysBy = (
             if (!identity) return undefined; // can not find account
 
             identity.current_chain_network = chain_network;
-            await setPrivateKeys({ ...private_keys, keys: [...private_keys.keys] });
+            const chain = chain_network.chain;
+            await setPrivateKeys({
+                ...private_keys,
+                keys: [...private_keys.keys],
+                current_identity_network: {
+                    ...private_keys.current_identity_network,
+                    [chain]: {
+                        chain,
+                        network: chain_network,
+                        ...match_chain<{ owner: string } | { address: `0x${string}` }>(chain, {
+                            ic: () => ({ owner: identity.address.ic.owner }),
+                            evm: () => ({ address: identity.address.evm.address }),
+                        }),
+                    },
+                },
+            });
             return true;
         },
         [private_keys, setPrivateKeys],

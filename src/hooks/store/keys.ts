@@ -54,7 +54,8 @@ export const LOCAL_KEY_RECORD_COUNT = (identity_network: IdentityNetwork) =>
     `${LOCAL_KEY_PREFIX_RECORD}:${get_identity_network_key(identity_network)}:count`; // * local
 export const LOCAL_KEY_RECORD_DATE = (identity_network: IdentityNetwork, date: string) =>
     `${LOCAL_KEY_PREFIX_RECORD}:${get_identity_network_key(identity_network)}:date:${date}`; // * local
-
+// !react query
+export const LOCAL_KEY_REACT_QUERY_CACHE = `${LOCAL_KEY_PREFIX}:react:query:cache`; // * local
 // ############### SESSION ###############
 
 export const SESSION_KEY_PASSWORD = `${SESSION_KEY_PREFIX}:password`; // * session

@@ -54,10 +54,9 @@ export const get_address_by_mnemonic_and_metadata = (
     const [evm, evm_keys] = (() => {
         // Use Ethereum standard derivation path m/44'/60'/0'/0/index
         const { privateKey } = root.derive(`m/44'/60'/0'/0/${subaccount}`);
-        if (!privateKey) return [undefined, undefined];
 
         // Generate public key from private key
-        const publicKey = secp256k1.publicKeyCreate(new Uint8Array(privateKey), false);
+        const publicKey = secp256k1.publicKeyCreate(new Uint8Array(privateKey ?? []), false);
 
         // Generate Ethereum address from public key
         // Remove the first byte (0x04) from the public key, then calculate keccak256 hash
@@ -67,7 +66,10 @@ export const get_address_by_mnemonic_and_metadata = (
         // Convert to checksum address format (EIP-55)
         const checksumAddress = getAddress(`0x${Buffer.from(addressBuffer).toString('hex')}`);
 
-        return [{ address: checksumAddress }, { privateKey: new Uint8Array(privateKey), address: checksumAddress }];
+        return [
+            { address: checksumAddress },
+            { privateKey: new Uint8Array(privateKey ?? []), address: checksumAddress },
+        ];
     })();
 
     return [

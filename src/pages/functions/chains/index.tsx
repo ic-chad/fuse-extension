@@ -33,6 +33,8 @@ export default function FunctionChainPage() {
                                         onClick={() => {
                                             if (!current_identity) return;
                                             switchChainNetwork(current_identity, network);
+                                            // back
+                                            goto(-1);
                                         }}
                                     />
                                 ))}

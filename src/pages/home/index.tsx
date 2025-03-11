@@ -2,25 +2,29 @@ import BigNumber from 'bignumber.js';
 import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import eth_svg from '~assets/svg/chains/eth.svg';
 import ic_svg from '~assets/svg/chains/ic.min.svg';
 import Icon from '~components/icon';
 import { FusePage } from '~components/layouts/page';
+import { useNativeBalance } from '~hooks/evm/native/read';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useTokenBalanceIcByRefreshing, useTokenInfoCurrentRead, useTokenPriceIcRead } from '~hooks/store/local';
 import { useCurrentIdentity } from '~hooks/store/local-secure';
 import { useSonnerToast } from '~hooks/toast';
 import { truncate_text } from '~lib/utils/text';
+import { match_chain } from '~types/chain';
 import type { ShowIdentityKey } from '~types/identity';
+import type { ChainNetwork } from '~types/network';
 import { get_token_unique_id, match_combined_token_info } from '~types/tokens';
 
 import { AddressTooltip } from './components/address-tooltip';
+import { ChainSelector } from './components/chain-selector';
 import { ShowSingleAddress } from './components/show-address';
 import { HomeShowToken } from './components/show-token';
-import { ChainSelector } from './components/chain-selector';
 
 function HomePage() {
     const current_state = useCurrentState();
-    const { current_identity } = useCurrentIdentity();
+    const { current_identity, current_chain_network } = useCurrentIdentity();
 
     return (
         <FusePage
@@ -30,14 +34,22 @@ function HomePage() {
                 refresh_token_price_ic_sleep: 1000 * 60,
             }}
         >
-            {current_identity && <InnerHomePage current_identity={current_identity} />}
+            {current_identity && current_chain_network && (
+                <InnerHomePage current_identity={current_identity} current_chain_network={current_chain_network} />
+            )}
         </FusePage>
     );
 }
 
 export default HomePage;
 
-function InnerHomePage({ current_identity }: { current_identity: ShowIdentityKey }) {
+function InnerHomePage({
+    current_identity,
+    current_chain_network,
+}: {
+    current_identity: ShowIdentityKey;
+    current_chain_network: ChainNetwork;
+}) {
     const toast = useSonnerToast();
     const navigate = useNavigate();
 
@@ -137,22 +149,40 @@ function InnerHomePage({ current_identity }: { current_identity: ShowIdentityKey
                         }
                         content={
                             <div className="flex flex-col gap-y-2 p-[10px]">
-                                {current_identity.address.ic?.owner && (
-                                    <ShowSingleAddress
-                                        address={current_identity.address.ic.owner}
-                                        truncated={truncate_text(current_identity.address.ic.owner)}
-                                        icon={ic_svg}
-                                        name="Principal ID"
-                                    />
-                                )}
-                                {current_identity.address.ic?.account_id && (
-                                    <ShowSingleAddress
-                                        address={current_identity.address.ic.account_id}
-                                        truncated={truncate_text(current_identity.address.ic.account_id)}
-                                        icon={ic_svg}
-                                        name="Account ID"
-                                    />
-                                )}
+                                {match_chain(current_chain_network.chain, {
+                                    ic: () => (
+                                        <>
+                                            {current_identity.address.ic?.owner && (
+                                                <ShowSingleAddress
+                                                    address={current_identity.address.ic.owner}
+                                                    truncated={truncate_text(current_identity.address.ic.owner)}
+                                                    icon={ic_svg}
+                                                    name="Principal ID"
+                                                />
+                                            )}
+                                            {current_identity.address.ic?.account_id && (
+                                                <ShowSingleAddress
+                                                    address={current_identity.address.ic.account_id}
+                                                    truncated={truncate_text(current_identity.address.ic.account_id)}
+                                                    icon={ic_svg}
+                                                    name="Account ID"
+                                                />
+                                            )}
+                                        </>
+                                    ),
+                                    evm: () => (
+                                        <>
+                                            {current_identity.address.evm.address && (
+                                                <ShowSingleAddress
+                                                    address={current_identity.address.evm.address}
+                                                    truncated={truncate_text(current_identity.address.evm.address)}
+                                                    icon={eth_svg}
+                                                    name="EVM Address"
+                                                />
+                                            )}
+                                        </>
+                                    ),
+                                })}
                             </div>
                         }
                     />

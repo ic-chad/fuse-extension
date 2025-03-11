@@ -4,7 +4,7 @@ import { same } from '~lib/utils/same';
 import type { Chain } from './chain';
 import type { IdentityKeyMnemonic, MnemonicParsed } from './keys/mnemonic';
 import type { IdentityKeyPrivate } from './keys/private_key';
-import type { ChainNetwork } from './network';
+import type { ChainNetwork, CurrentIdentityNetwork } from './network';
 
 export type IdentityId = string; // uuid
 
@@ -22,12 +22,12 @@ export interface IdentityKey {
 }
 
 export interface IdentityAddress {
-    ic?: {
+    ic: {
         owner: string;
         account_id: string;
     };
-    evm?: {
-        address: string;
+    evm: {
+        address: `0x${string}`;
     };
 }
 
@@ -35,6 +35,7 @@ export interface PrivateKeys {
     mnemonic: string | undefined; // could not produce new wallet if not exist
     keys: IdentityKey[];
     current: IdentityId; // current identity // uuid
+    current_identity_network: CurrentIdentityNetwork;
 }
 
 export const match_combined_identity_key = <T>(
