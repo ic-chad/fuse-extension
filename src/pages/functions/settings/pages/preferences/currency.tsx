@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import Icon from '~components/icon';
 import { FusePage } from '~components/layouts/page';
 import { FusePageTransition } from '~components/layouts/transition';
-import { showToast } from '~components/toast';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useGoto } from '~hooks/memo/goto';
 
@@ -30,7 +30,7 @@ function FunctionSettingsCurrency() {
 
     const confirm = (item: { id: any; expired?: string }) => {
         setSelectedId(item.id);
-        showToast('Successfully set', 'success');
+        toast.success('Successfully set');
         goto(-1);
     };
     return (

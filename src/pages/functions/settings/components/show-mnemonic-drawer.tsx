@@ -4,8 +4,8 @@ import CopyToClipboard from 'react-copy-to-clipboard';
 
 import Icon from '~components/icon';
 import InputPassword from '~components/input-password';
-import { showToast } from '~components/toast';
 import { usePasswordHashed } from '~hooks/store/local';
+import { useSonnerToast } from '~hooks/toast';
 import { verify_password } from '~lib/password';
 import { cn } from '~lib/utils/cn';
 
@@ -23,6 +23,8 @@ const BackupMnemonicDrawer = ({
     mnemonic?: string;
     type: BackupType;
 }) => {
+    const toast = useSonnerToast();
+
     const { onOpenChange } = useDisclosure();
     const [valid, setValid] = useState(false);
     const [password1, setPassword1] = useState('');
@@ -87,12 +89,7 @@ const BackupMnemonicDrawer = ({
                                 ) : (
                                     <div className="mt-5 w-full rounded-xl border border-[#333333]">
                                         <p className="block h-[120px] break-words p-3 text-sm">{mnemonic}</p>
-                                        <CopyToClipboard
-                                            text={mnemonic}
-                                            onCopy={() => {
-                                                showToast('Copied', 'success');
-                                            }}
-                                        >
+                                        <CopyToClipboard text={mnemonic} onCopy={() => toast.success('Copied')}>
                                             <div className="flex w-full cursor-pointer items-center justify-center border-t border-[#333333] py-3 duration-300 hover:opacity-85">
                                                 <Icon name="icon-copy" className="mr-2 h-3 w-3 text-[#FFCF13]" />
                                                 <span className="text-sm text-[#FFCF13]">Copy</span>

@@ -3,13 +3,15 @@ import { useState } from 'react';
 import Icon from '~components/icon';
 import { FusePage } from '~components/layouts/page';
 import { FusePageTransition } from '~components/layouts/transition';
-import { showToast } from '~components/toast';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useGoto } from '~hooks/memo/goto';
+import { useSonnerToast } from '~hooks/toast';
 
 import { FunctionHeader } from '../../../components/header';
 
 function FunctionSettingsLanguage() {
+    const toast = useSonnerToast();
+
     const current_state = useCurrentState();
 
     const { setHide, goto } = useGoto();
@@ -30,7 +32,7 @@ function FunctionSettingsLanguage() {
 
     const confirm = (item: { id: any; expired?: string }) => {
         setSelectedId(item.id);
-        showToast('Successfully set', 'success');
+        toast.success('Successfully set');
         goto(-1);
     };
     return (

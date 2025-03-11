@@ -176,16 +176,9 @@ const intercept_request = async (
             console.debug(`🚀 ~ const intercept_request= ~ func:`, func);
             const func_text = func.display();
             const args = decode_args(func, arg);
-            // const args_text = stringify(args);
             const args_text = IDL.FuncClass.argsToString(func.argTypes, args);
-            console.debug(
-                `🚀 ~ const intercept_request= ~ args_text:`,
-                timeout,
-                func_text,
-                args,
-                args_text,
-                stringify(args),
-            );
+            const args_json = stringify(args);
+            console.debug(`🚀 ~ const intercept_request= ~ args_text:`, timeout, func_text, args, args_text, args_json);
 
             // do popup
             let action: PopupAction | undefined = undefined;
@@ -201,6 +194,7 @@ const intercept_request = async (
                     method,
                     func_text,
                     args_text,
+                    args_json,
                     request_hash: '',
                 };
                 approve_action.request_hash = await hash_approve_ic_action(approve_action);
@@ -215,6 +209,7 @@ const intercept_request = async (
                     method,
                     func_text,
                     args_text,
+                    args_json,
                     state: { err: 'dummy' },
                 };
 

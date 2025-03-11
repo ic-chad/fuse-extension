@@ -227,7 +227,7 @@ function InnerHomePage({
                         { callback: () => navigate('/home/receive'), icon: 'icon-receive', name: 'Receive' },
                         {
                             callback: () => {
-                                toast.info('not implemented');
+                                toast.info('Come soon');
                                 // navigate('/home/swap')
                             },
                             icon: 'icon-swap',
@@ -235,7 +235,7 @@ function InnerHomePage({
                         },
                         {
                             callback: () => {
-                                toast.info('not implemented');
+                                toast.info('Come soon');
                                 // navigate('/home/dapps')
                             },
                             icon: 'icon-dapps',

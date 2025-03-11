@@ -79,7 +79,6 @@ function FunctionTransferPage() {
             match_combined_token_info(token.info, {
                 ic: (ic) => {
                     const s = search.trim().toLowerCase();
-
                     if (
                         !s ||
                         (s && (0 <= ic.name.toLowerCase().indexOf(s) || 0 <= ic.symbol.toLowerCase().indexOf(s)))

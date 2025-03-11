@@ -17,6 +17,8 @@ function FunctionSettingsSecurityPage() {
 
     const { main_mnemonic_identity } = useIdentityKeys();
 
+    const idleMinutes = Math.floor(idle / 1000 / 60);
+
     return (
         <FusePage current_state={current_state}>
             <FusePageTransition
@@ -32,7 +34,11 @@ function FunctionSettingsSecurityPage() {
             >
                 <SettingsGroup className="mt-6 w-full px-5">
                     <SettingsItem path={'/home/settings/security/password'} title="Change Password" />
-                    <SettingsItem path={'/home/settings/security/lock-time'} title="Screen Lock" tip={`${idle}ms`} />
+                    <SettingsItem
+                        path={'/home/settings/security/lock-time'}
+                        title="Screen Lock"
+                        tip={`${idleMinutes} minutes`}
+                    />
                 </SettingsGroup>
 
                 {main_mnemonic_identity && (

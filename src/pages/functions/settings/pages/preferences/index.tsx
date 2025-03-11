@@ -1,8 +1,8 @@
 import { Switch } from '@heroui/react';
+import { toast } from 'sonner';
 
 import { FusePage } from '~components/layouts/page';
 import { FusePageTransition } from '~components/layouts/transition';
-import { showToast } from '~components/toast';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useGoto } from '~hooks/memo/goto';
 
@@ -34,9 +34,7 @@ function FunctionSettingsPreferencesPage() {
 
                 <SettingsGroup>
                     <SettingsItem
-                        path={() => {
-                            showToast('not implemented');
-                        }}
+                        path={() => toast.info('Come soon')}
                         title="Fuse wallet actions on web"
                         arrow={false}
                         right={

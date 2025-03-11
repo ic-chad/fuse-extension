@@ -44,7 +44,7 @@ function FunctionSettingsAboutPage() {
                     <SettingsGroup className="mt-6 w-full">
                         <SettingsItem
                             path={() => {
-                                toast.info('not implemented');
+                                toast.info('Come soon');
                             }}
                             title="Terms of Service"
                             arrow={false}
@@ -57,7 +57,7 @@ function FunctionSettingsAboutPage() {
                         />
                         <SettingsItem
                             path={() => {
-                                toast.info('not implemented');
+                                toast.info('Come soon');
                             }}
                             title="Privacy policy"
                             arrow={false}

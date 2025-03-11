@@ -8,10 +8,10 @@ import { useParams } from 'react-router-dom';
 import Icon from '~components/icon';
 import { FusePage } from '~components/layouts/page';
 import { FusePageTransition } from '~components/layouts/transition';
-import { showToast } from '~components/toast';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useGoto, type GotoFunction } from '~hooks/memo/goto';
 import { useIdentityKeys } from '~hooks/store/local-secure';
+import { useSonnerToast } from '~hooks/toast';
 import { truncate_text } from '~lib/utils/text';
 
 import { FunctionHeader } from '../../../components/header';
@@ -44,6 +44,8 @@ function FunctionSettingsAccountsSinglePage() {
 export default FunctionSettingsAccountsSinglePage;
 
 const InnerSingleAccountPage = ({ goto: _goto }: { goto: GotoFunction }) => {
+    const toast = useSonnerToast();
+
     const { id } = useParams();
 
     const { current_identity, identity_list, showMnemonic, showPrivateKey, deleteIdentity, updateIdentity } =
@@ -125,12 +127,7 @@ const InnerSingleAccountPage = ({ goto: _goto }: { goto: GotoFunction }) => {
                 {current.address.ic?.owner && (
                     <div className="flex items-center justify-between border-b border-[#222222] px-4 py-3">
                         <span className="text-sm text-[#EEEEEE]">Principal ID</span>
-                        <CopyToClipboard
-                            text={current.address.ic?.owner}
-                            onCopy={() => {
-                                showToast('Copied', 'success');
-                            }}
-                        >
+                        <CopyToClipboard text={current.address.ic?.owner} onCopy={() => toast.success('Copied')}>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-[#999999]">
                                     {truncate_text(current.address.ic?.owner || '')}
@@ -146,12 +143,7 @@ const InnerSingleAccountPage = ({ goto: _goto }: { goto: GotoFunction }) => {
                 {current.address.ic?.account_id && (
                     <div className="flex items-center justify-between px-4 py-3">
                         <span className="text-sm text-[#EEEEEE]">Account ID</span>
-                        <CopyToClipboard
-                            text={current.address.ic?.account_id}
-                            onCopy={() => {
-                                showToast('Copied', 'success');
-                            }}
-                        >
+                        <CopyToClipboard text={current.address.ic?.account_id} onCopy={() => toast.success('Copied')}>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm text-[#999999]">
                                     {truncate_text(current.address.ic?.account_id || '')}
@@ -232,7 +224,7 @@ const InnerSingleAccountPage = ({ goto: _goto }: { goto: GotoFunction }) => {
                         if (r === undefined) return;
                         if (r === false) throw new Error('can not update');
                         // notice successful
-                        showToast('Updated', 'success');
+                        toast.success('Updated');
                         setIsOpenAccountName(false);
                     });
                 }}
@@ -247,7 +239,7 @@ const InnerSingleAccountPage = ({ goto: _goto }: { goto: GotoFunction }) => {
                         if (r === undefined) return;
                         if (r === false) throw new Error('can not update');
                         // notice successful
-                        showToast('Updated', 'success');
+                        toast.success('Updated');
                         setIsOpenAvatar(false);
                     });
                 }}

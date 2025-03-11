@@ -55,7 +55,7 @@ function RestoreWayPage({
                                 selected === 'private_key' ? 'border-[#FFCF13]' : 'border-[#333333]',
                             )}
                             onClick={() => {
-                                toast.warning('not implemented');
+                                toast.warning('Come soon');
                                 // setSelected('private_key') // TODO not implemented
                             }}
                         >

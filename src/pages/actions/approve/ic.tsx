@@ -1,14 +1,19 @@
 import { Button } from '@heroui/react';
-import { useCallback, useMemo } from 'react';
-import CopyToClipboard from 'react-copy-to-clipboard';
+import { useCallback, useMemo, useRef } from 'react';
 
+import { ShowSingleAddress } from '~/pages/home/components/show-address';
+import ic_svg from '~assets/svg/chains/ic.min.svg';
 import Icon from '~components/icon';
-import { showToast } from '~components/toast';
-import { set_local_secure_approved, useCurrentConnectedApps } from '~hooks/store/local-secure';
+import { set_local_secure_approved, useCurrentConnectedApps, useCurrentIdentity } from '~hooks/store/local-secure';
 import { set_current_session_approve_once } from '~hooks/store/session';
+import { parse_factory } from '~lib/utils/json';
+import { truncate_text } from '~lib/utils/text';
+import { AddressTooltip } from '~pages/home/components/address-tooltip';
 import { get_popup_action_id, type PopupAction } from '~types/actions';
 import type { ApprovedState } from '~types/actions/approve';
 import type { ApproveIcAction } from '~types/actions/approve/ic';
+
+const parse = parse_factory(JSON.parse);
 
 function ApproveIcActionPage({
     action,
@@ -20,6 +25,8 @@ function ApproveIcActionPage({
     deletePopupAction: (action: PopupAction) => Promise<void>;
 }) {
     const [current_connected_apps, , { current_identity_network }] = useCurrentConnectedApps();
+
+    const args = useMemo(() => parse(approve_ic.args_json), [approve_ic]);
 
     const app = useMemo(() => {
         if (!current_connected_apps) return undefined;
@@ -63,71 +70,112 @@ function ApproveIcActionPage({
         },
         [approve_ic, deletePopupAction, action, current_identity_network],
     );
+
+    const { current_identity } = useCurrentIdentity();
+
+    const ref = useRef<HTMLDivElement>(null);
+
     return (
-        <div>
-            <div className="flex h-screen w-full flex-col justify-between">
-                <div className="flex w-full items-center border-b border-[#333333] px-5 py-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#181818] text-2xl">
-                        😄
-                    </div>
-                    <span className="px-2 text-sm font-semibold">Wallet 1</span>
-                    <CopyToClipboard
-                        text={'wallet'}
-                        onCopy={() => {
-                            showToast('Copied', 'success');
-                        }}
-                    >
-                        <Icon name="icon-copy" className="h-3 w-3 cursor-pointer text-[#999999] hover:text-[#FFCF13]" />
-                    </CopyToClipboard>
-                </div>
-                <div className="overflow-y-1 mt-4 w-full flex-1 px-5">
-                    {/*<div>{app?.favicon && <img src={app.favicon} />}</div> */}
-                    <div className="flex w-full items-center">
-                        <img
-                            src="https://app.icpswap.com/images/tokens/ca6gz-lqaaa-aaaaq-aacwa-cai.png"
-                            className="mr-3 h-12 w-12 rounded-full"
-                        />
-                        <div className="w-auto">
-                            <strong className="block text-lg font-semibold">Sign Message</strong>
-                            <span className="text-sm text-[#999999]">icpswap.com</span>
+        <div ref={ref} className="flex h-screen w-full flex-col justify-between">
+            <div className="mt-4 flex items-center px-5">
+                {current_identity && (
+                    <>
+                        <div className="flex items-center">
+                            <div className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#333333] text-lg font-semibold text-[#999999]">
+                                <div
+                                    style={{
+                                        lineHeight: '22px',
+                                        fontSize: '22px',
+                                        transform: 'translateY(1.5px)',
+                                    }}
+                                >
+                                    {current_identity.icon}
+                                </div>
+                            </div>
+
+                            {/** copy address  */}
+                            <AddressTooltip
+                                container={ref.current ?? undefined}
+                                trigger={
+                                    <div className="flex flex-row items-center justify-center text-[#EEEEEE] transition duration-300 hover:text-[#FFCF13]">
+                                        <span className="cursor-pointer px-2 text-base">{current_identity.name}</span>
+                                        <Icon name="icon-copy" className="h-[14px] w-[14px] cursor-pointer" />
+                                    </div>
+                                }
+                                content={
+                                    <div className="flex flex-col gap-y-2 p-[10px]">
+                                        {current_identity.address.ic?.owner && (
+                                            <ShowSingleAddress
+                                                address={current_identity.address.ic.owner}
+                                                truncated={truncate_text(current_identity.address.ic.owner)}
+                                                icon={ic_svg}
+                                                name="Principal ID"
+                                            />
+                                        )}
+                                        {current_identity.address.ic?.account_id && (
+                                            <ShowSingleAddress
+                                                address={current_identity.address.ic.account_id}
+                                                truncated={truncate_text(current_identity.address.ic.account_id)}
+                                                icon={ic_svg}
+                                                name="Account ID"
+                                            />
+                                        )}
+                                    </div>
+                                }
+                            />
                         </div>
-                    </div>
-                    <div className="block py-2 text-sm text-[#999999]">{app?.title}</div>
-                    <div className="block text-sm text-[#999999]">{approve_ic.origin}</div>
-                    <div className="mt-4 w-full rounded-xl bg-[#181818] px-4 py-3">
-                        <h3 className="block text-lg font-semibold">Message</h3>
-                        <div className="block w-full break-words pt-2 text-sm text-[#999999]">
-                            ispswap wants you to sign in with your icp account:
-                            <br />
-                            3RaqYYn8Q8VC2UtspaxSvLnZed8QAWAcyuPVou6pVy5P
-                            <br />
-                            wallet_sign_statement URI: https://icpswap.com
-                            <br />
-                            Version: 1<br />
-                            Chain ID: 900
-                            <br />
-                            Nonce: b0ahyvfs
-                            <br />
-                            Issued At: 2025-03-06T01:27:36.157Z
-                            <br />
-                            Expiration Time: 2025-04-05T01:27:36.157Z
-                        </div>
+                    </>
+                )}
+            </div>
+
+            <div className="overflow-y-1 mt-4 w-full flex-1 px-5">
+                <div className="flex w-full items-center">
+                    {app?.favicon ? (
+                        <img src={app.favicon} className="mr-3 h-12 w-12 rounded-full" />
+                    ) : (
+                        <Icon name="icon-web" className="mr-3 h-12 w-12 rounded-full"></Icon>
+                    )}
+                    <div className="w-auto">
+                        <strong className="block text-lg font-semibold">Sign Message</strong>
+                        <span className="text-sm text-[#999999]">{app?.origin}</span>
                     </div>
                 </div>
-                <div className="grid w-full grid-cols-2 gap-x-3 p-5">
-                    <Button
-                        className="h-12 w-full rounded-xl bg-[#666666] text-lg font-semibold text-white"
-                        onPress={() => onAction('deny')}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        className="h-12 w-full rounded-xl bg-[#FFCF13] text-lg font-semibold text-black"
-                        onPress={() => onAction('approve')}
-                    >
-                        Approve
-                    </Button>
+
+                <div className="block py-2 text-sm text-[#999999]">{app?.title}</div>
+                <div className="block text-sm text-[#999999]">{approve_ic.origin}</div>
+                {/* {JSON.stringify(approve_ic)} */}
+                <div className="mt-4 w-full rounded-xl bg-[#181818] px-4 py-3">
+                    <h3 className="block text-lg font-semibold">Message</h3>
+                    <div className="block max-h-[250px] w-full overflow-y-scroll break-words pt-2 text-sm text-[#999999]">
+                        This application wants you to authorize a transaction with your ICP account:
+                        <br />
+                        <strong>Request Hash:</strong> {approve_ic.request_hash}
+                        <br />
+                        <strong>Origin:</strong> {approve_ic.origin}
+                        <br />
+                        <strong>Canister ID:</strong> {approve_ic.canister_id}
+                        <br />
+                        <strong>Method:</strong> {approve_ic.method}
+                        <br />
+                        <strong>Transaction Details:</strong>
+                        <br />
+                        {approve_ic.args_json}
+                    </div>
                 </div>
+            </div>
+            <div className="grid w-full grid-cols-2 gap-x-3 p-5">
+                <Button
+                    className="h-12 w-full rounded-xl bg-[#666666] text-lg font-semibold text-white"
+                    onPress={() => onAction('deny')}
+                >
+                    Cancel
+                </Button>
+                <Button
+                    className="h-12 w-full rounded-xl bg-[#FFCF13] text-lg font-semibold text-black"
+                    onPress={() => onAction('approve')}
+                >
+                    Approve
+                </Button>
             </div>
         </div>
     );

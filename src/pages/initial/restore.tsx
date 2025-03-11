@@ -66,7 +66,7 @@ function CreateRestorePage({ wt, extra }: { wt: WindowType; extra?: boolean }) {
     }, [extra, password1, mnemonic, restoreAccountByMnemonic, isKeyExist, pushIdentity, wt, navigate]);
 
     const onPrivateKeyCompleted = useCallback(async () => {
-        throw new Error('unimplemented');
+        throw new Error('Come soon');
     }, []);
 
     const [way_class, setWayClass] = useState<'slide-in-right' | 'slide-in-left'>('slide-in-right');

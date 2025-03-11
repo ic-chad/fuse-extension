@@ -4,7 +4,6 @@ import BigNumber from 'bignumber.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Icon from '~components/icon';
-import { showToast } from '~components/toast';
 import type { GotoFunction } from '~hooks/memo/goto';
 import { useCurrentConnectedIcIdentity } from '~hooks/memo/identity';
 import { identity_network_callback } from '~hooks/store/common';
@@ -12,9 +11,11 @@ import {
     push_local_record,
     useTokenBalanceIcByRefreshing,
     useTokenInfoIcByInitial,
+    useTokenPriceIcByInitial,
     useTokenPriceIcRead,
 } from '~hooks/store/local';
 import { useCurrentIdentity, useRecentAddresses } from '~hooks/store/local-secure';
+import { useSonnerToast } from '~hooks/toast';
 import { icrc1_transfer, transfer } from '~lib/canisters/icrc1';
 import type { MessageResult } from '~lib/messages';
 import { truncate_principal, truncate_text } from '~lib/utils/text';
@@ -31,6 +32,8 @@ function FunctionTransferTokenIcAmountPage({
     to: string;
     goto: GotoFunction;
 }) {
+    const toast = useSonnerToast();
+
     const { current_identity, current_identity_network } = useCurrentIdentity();
     const [, { pushRecentAddress }] = useRecentAddresses();
 
@@ -55,6 +58,15 @@ function FunctionTransferTokenIcAmountPage({
 
     const [amount, setAmount] = useState('0');
 
+    const current_token = useTokenPriceIcByInitial(canister_id);
+
+    const showUsd = useMemo<string | undefined>(() => {
+        if (current_token === undefined) return '0.00';
+        if (!amount) return '0.00';
+
+        return (Number(current_token.price) * Number(amount)).toFixed(2);
+    }, [current_token, amount]);
+
     const [transferring, setTransferring] = useState(false);
     const onConfirm = useCallback(async () => {
         if (!to || !token || !amount || !identity || !balance || !current_identity_network) return;
@@ -65,7 +77,7 @@ function FunctionTransferTokenIcAmountPage({
             .split('.')[0];
 
         if (BigInt(balance) < BigInt(amount_text) + BigInt(token.fee)) {
-            showToast('InsufficientFunds');
+            toast.success('InsufficientFunds');
             return;
         }
 
@@ -97,11 +109,11 @@ function FunctionTransferTokenIcAmountPage({
             const height = await do_transfer();
             state = { ok: height };
             refreshBalance(); // update balance again
-            showToast(`do transfer successful: ${height}`);
+            toast.success(`do transfer successful: ${height}`);
             setTimeout(() => _goto('/', { replace: true }), 10000);
         } catch (e) {
             state = { err: `${e}` };
-            showToast(`${e}`, 'error');
+            toast.error(`${e}`);
         } finally {
             if (state !== undefined) {
                 const price = all_ic_prices[token.canister_id];
@@ -150,6 +162,7 @@ function FunctionTransferTokenIcAmountPage({
         current_identity_network,
         pushRecentAddress,
         all_ic_prices,
+        toast,
     ]);
 
     const sendRef = useRef<HTMLInputElement>(null);
@@ -184,7 +197,7 @@ function FunctionTransferTokenIcAmountPage({
                     />
                     <span className="text-5xl font-bold text-white">{token?.symbol}</span>
                 </div>
-                <span className="block w-full py-2 text-center text-base text-[#999999]">$0.00</span>
+                <span className="block w-full py-2 text-center text-base text-[#999999]">${showUsd}</span>
                 <div className="flex items-center justify-center text-sm">
                     <span className="pr-2 text-[#999999]">Available:</span>
                     <span className="pr-3 text-[#EEEEEE]">{showBalance}</span>

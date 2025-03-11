@@ -9,7 +9,8 @@ export interface ApproveIcAction {
     method: string;
 
     func_text: string; // candid display
-    args_text: string;
+    args_text: string; // args display
+    args_json: string; // args display
 
     request_hash: string;
 }

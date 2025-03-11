@@ -79,7 +79,7 @@ export const AddWalletDrawer = ({
                                 },
                                 {
                                     callback: () => {
-                                        toast.error('not implemented');
+                                        toast.error('Come soon');
                                         // goto(`${import_prefix}/private_key`)
                                     },
                                     icon: 'icon-import',

@@ -14,6 +14,7 @@ export interface ApprovedIcRecord {
 
     func_text: string; // candid display // Too long and it gets truncated
     args_text: string; // Too long and it gets truncated
+    args_json: string; // Too long and it gets truncated
 
     state: MessageResult<string, string>; // Too long and it gets truncated
 }

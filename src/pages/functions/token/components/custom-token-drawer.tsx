@@ -15,6 +15,7 @@ import {
 import { get_cached_data } from '~hooks/store/local';
 import { get_token_info_ic } from '~hooks/store/local/token/ic/info';
 import { icrc1_logo } from '~lib/canisters/icrc1';
+import { cn } from '~lib/utils/cn';
 import type { IcTokenInfo } from '~types/tokens/ic';
 import { get_token_logo_key } from '~types/tokens/preset';
 
@@ -71,13 +72,16 @@ const CustomTokenDrawer = ({
                             <label className="block py-3 text-sm">Canister ID</label>
                             <input
                                 type="text"
-                                className="h-[48px] w-full rounded-xl border border-[#333333] bg-transparent px-3 text-sm outline-none transition duration-300 hover:border-[#FFCF13] focus:border-[#FFCF13]"
+                                className={cn(
+                                    'h-[48px] w-full rounded-xl border border-[#333333] bg-transparent px-3 text-sm outline-none transition duration-300 hover:border-[#FFCF13] focus:border-[#FFCF13]',
+                                    !isCanisterId && address && '!border-red-500 hover:!border-red-500',
+                                )}
                                 placeholder="Enter canister id"
                                 onChange={(e) => setAddress(e.target.value)}
                                 value={address}
                             />
                         </div>
-                        <div className="mt-4 w-full">
+                        <div className="mt-2 w-full">
                             {!isCanisterId && !address && <div> </div>}
                             {!isCanisterId && address && <div className="text-red-500"> Wrong Canister Id </div>}
                             {isCanisterId && (

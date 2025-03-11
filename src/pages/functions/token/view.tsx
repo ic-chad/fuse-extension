@@ -179,7 +179,7 @@ function FunctionTokenViewPage() {
                                     trigger={
                                         <div className="flex cursor-pointer items-center text-sm text-[#FFCF13] transition duration-300 hover:opacity-85">
                                             <span className="pr-1">Add</span>
-                                            <Icon name="icon-arrow-right" className="h-[6px] w-[11px] text-[#FFCF13]" />
+                                            <Icon name="icon-arrow-right" className="h-3 w-3 text-[#FFCF13]" />
                                         </div>
                                     }
                                     container={ref.current ?? undefined}

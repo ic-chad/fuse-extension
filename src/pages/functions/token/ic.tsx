@@ -87,7 +87,7 @@ const InnerPage = ({ canister_id, navigate }: { canister_id: string; navigate: N
                     },
                     {
                         callback: () => {
-                            toast.info('not implemented');
+                            toast.info('Come soon');
                             // navigate('/home/swap')
                         },
                         icon: 'icon-swap',
@@ -95,7 +95,7 @@ const InnerPage = ({ canister_id, navigate }: { canister_id: string; navigate: N
                     },
                     {
                         callback: () => {
-                            toast.info('not implemented');
+                            toast.info('Come soon');
                         },
                         icon: 'icon-history',
                         name: 'History',

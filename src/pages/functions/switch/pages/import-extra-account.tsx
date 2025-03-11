@@ -52,7 +52,7 @@ function ImportExtraAccountPage() {
     }, [mnemonic, isKeyExist, pushIdentity, navigate, loading, toast]);
 
     const onPrivateKeyCompleted = useCallback(async () => {
-        throw new Error('unimplemented');
+        throw new Error('Come soon');
     }, []);
 
     return (
