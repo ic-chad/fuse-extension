@@ -6,7 +6,6 @@ import eth_svg from '~assets/svg/chains/eth.svg';
 import ic_svg from '~assets/svg/chains/ic.min.svg';
 import Icon from '~components/icon';
 import { FusePage } from '~components/layouts/page';
-import { useNativeBalance } from '~hooks/evm/native/read';
 import { useCurrentState } from '~hooks/memo/current_state';
 import { useTokenBalanceIcByRefreshing, useTokenInfoCurrentRead, useTokenPriceIcRead } from '~hooks/store/local';
 import { useCurrentIdentity } from '~hooks/store/local-secure';

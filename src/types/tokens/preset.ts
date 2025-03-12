@@ -1,8 +1,8 @@
 // prettier-ignore // cSpell:words eurc dogmi dolr elna goldao icvc kinic motoko nfidw sneed trax yuku draggin icpcc neutrinite nfid origyn
-import { is_same_token_info, match_combined_token_info, TokenTag, type CombinedTokenInfo, type TokenInfo } from ".";
+import { is_same_token_info, match_combined_token_info_async, TokenTag, type CombinedTokenInfo, type TokenInfo } from ".";
 import { IcTokenStandard, type IcTokenInfo } from "./ic";
 import { get_cached_data } from "~hooks/store/local";
-
+import { evm_get_logo_uri } from './evm';
 // IC
 import TOKEN_IC_ICP_SVG from 'data-base64:~assets/svg/tokens/ic/ICP.min.svg';
 // CK
@@ -55,6 +55,7 @@ import TOKEN_IC_SNS_NFIDW_PNG  from 'data-base64:~assets/svg/tokens/ic/sns/NFIDW
 import TOKEN_IC_SNS_FUEL_PNG   from 'data-base64:~assets/svg/tokens/ic/sns/FUEL.png';
 import TOKEN_IC_SNS_ICE_PNG    from 'data-base64:~assets/svg/tokens/ic/sns/ICE.png';
 import TOKEN_IC_SNS_DKP_PNG    from 'data-base64:~assets/svg/tokens/ic/sns/DKP.png';
+
 
 const PRESET_LOGO: Record<string, string> = {
     'ic#ryjl3-tyaaa-aaaaa-aaaba-cai': TOKEN_IC_ICP_SVG,
@@ -110,18 +111,25 @@ const PRESET_LOGO: Record<string, string> = {
     'ic#zfcdd-tqaaa-aaaaq-aaaga-cai': TOKEN_IC_SNS_DKP_PNG,
 }
 
-export const get_token_logo_key = (token: {ic: {canister_id: string}}): string => {
+export const get_token_logo_key = (token: {ic: {canister_id: string}}|{evm: {address: string, chainID: number}}): string => {
     if ('ic' in token) return `token:ic:${token.ic.canister_id}:logo`;
-    return ''
+    if ('evm' in token) return `token:evm:${token.evm.address}:${token.evm.chainID}:logo`;
+    throw new Error('Invalid token');
 }
 
 export const get_token_logo = async (info: CombinedTokenInfo): Promise<string | undefined> => {
-    const preset = match_combined_token_info(info, {
-        ic: (ic) => PRESET_LOGO[`ic#${ic.canister_id}`],
+    return match_combined_token_info_async(info, {
+        ic: async (ic) => {
+            const preset = PRESET_LOGO[`ic#${ic.canister_id}`]
+            if (preset) return preset;
+            const key = get_token_logo_key({ic: {canister_id: ic.canister_id}})
+            return get_cached_data(key, async () => undefined, 1000 * 60 * 60 * 24  * 365 * 100)
+        },
+        evm: async (evm) => {
+           return evm_get_logo_uri(evm.address, evm.chainID)
+        },
     });
-    if (preset) return preset;
-    const key = get_token_logo_key(info)
-    return get_cached_data(key, async () => undefined, 1000 * 60 * 60 * 24  * 365 * 100)
+
 }
 
 const TOKEN_INFO_IC_ICP : IcTokenInfo = { canister_id: 'ryjl3-tyaaa-aaaaa-aaaba-cai', standards: [IcTokenStandard.ICRC1, IcTokenStandard.ICRC2], name: 'Internet Computer', symbol: 'ICP', decimals:  8, fee: '10000' }; // fee 0.0001 ICP

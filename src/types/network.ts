@@ -28,6 +28,7 @@ export const CHAIN_IC_MAINNET: ChainIcNetwork = {
     created: 0, // inner, means mainnet
     origin: 'mainnet', //'https://icp-api.io'
 };
+export const DEFAULT_CHAIN_NETWORK = CHAIN_IC_MAINNET;
 
 // EVM Chain Definitions - Just Ethereum Mainnet and Sepolia Testnet
 export const CHAIN_EVM_ETHEREUM: ChainEvmNetwork = {
@@ -111,7 +112,16 @@ export const get_identity_network_key = (identity_network: IdentityNetwork): str
         },
     });
 };
-
+// Helper function to get current identity network
+export const get_current_identity_network = (
+    chain: Chain,
+    current_identity_network: CurrentIdentityNetwork,
+): IdentityNetwork => {
+    return match_chain<IdentityNetwork>(chain, {
+        ic: () => current_identity_network.ic,
+        evm: () => current_identity_network.evm,
+    });
+};
 // Helper function to get network by chain ID
 export const get_evm_network_by_chain_id = (chainId: number): ChainEvmNetwork | undefined => {
     return DEFAULT_EVM_NETWORKS.find((network) => network.chainId === chainId);
