@@ -14,7 +14,7 @@ import { get_unique_evm_wallet_client } from '~hooks/store/agent';
 
 import { useCurrentChainID, useCurrentPublicClient } from '../viem';
 
-interface UseReadContractConfig<
+export interface UseReadContractConfig<
     TAbi extends Abi | readonly unknown[],
     TFunctionName extends ContractFunctionName<TAbi, 'pure' | 'view'>,
 > {
@@ -38,7 +38,7 @@ export const useReadContract = <
         if (!chain_id || !client) return [];
         return [`evm_${chain_id}`, 'contract', address, functionName, args];
     }, [address, chain_id, functionName, args, client]);
-    const enabled = !!chain_id && !!client;
+    const enabled = !!chain_id && !!client && !!(!queryOptions || queryOptions.enabled);
     return useQuery({
         queryKey,
         queryFn: async () => {
@@ -51,7 +51,6 @@ export const useReadContract = <
             });
         },
         enabled,
-        ...queryOptions,
     });
 };
 
@@ -60,20 +59,20 @@ export const useWriteContract = <
     TFunctionName extends ContractFunctionName<TAbi, 'payable' | 'nonpayable'>,
     TArgs extends ContractFunctionArgs<TAbi, 'payable' | 'nonpayable', TFunctionName>,
     TChainOverride extends Chain | undefined = undefined,
->(
-    params: WriteContractParameters<TAbi, TFunctionName, TArgs, Chain, Account, TChainOverride>,
-) => {
+>() => {
     const client = get_unique_evm_wallet_client();
     const chain_id = useCurrentChainID();
 
     const queryKey = useMemo(() => {
         if (!chain_id || !client) return [];
-        return [`evm_${chain_id}`, 'contract', params.address, params.functionName, params.args];
-    }, [chain_id, client, params]);
+        return [`evm_${chain_id}`, 'contract'];
+    }, [chain_id, client]);
 
     return useMutation({
         mutationKey: queryKey,
-        mutationFn: async () => {
+        mutationFn: async (
+            params: WriteContractParameters<TAbi, TFunctionName, TArgs, Chain, Account, TChainOverride>,
+        ) => {
             if (!client) throw new Error('Client is required');
             return client.writeContract(params);
         },

@@ -52,6 +52,14 @@ export const DEFAULT_EVM_NETWORKS: ChainEvmNetwork[] = [CHAIN_EVM_ETHEREUM, CHAI
 export type ChainNetwork = ChainIcNetwork | ChainEvmNetwork;
 export type ChainNetworks = ChainNetwork[]; // user added networks
 
+// define type guard functions
+export const isEvmNetwork = (network: ChainNetwork | undefined): network is ChainEvmNetwork => {
+    return !!network && network.chain === 'evm';
+};
+export const isIcNetwork = (network: ChainNetwork | undefined): network is ChainIcNetwork => {
+    return !!network && network.chain === 'ic';
+};
+
 export const DEFAULT_CHAIN_NETWORKS_LOGO = {
     ic: {
         mainnet: ICLogo,
@@ -90,14 +98,6 @@ export interface ChainEvmIdentityNetwork {
 }
 
 export type IdentityNetwork = ChainIcIdentityNetwork | ChainEvmIdentityNetwork;
-
-// define type guard functions
-export const isEvmNetwork = (network: IdentityNetwork | undefined): network is ChainEvmIdentityNetwork => {
-    return !!network && network.chain === 'evm';
-};
-export const isIcNetwork = (network: IdentityNetwork | undefined): network is ChainIcIdentityNetwork => {
-    return !!network && network.chain === 'ic';
-};
 
 export const get_identity_network_key = (identity_network: IdentityNetwork): string => {
     return match_chain(identity_network.chain, {
