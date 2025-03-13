@@ -5,7 +5,7 @@ import { relay_message_with_timeout } from '~lib/utils/timeout';
 export const relay_message_ping = async (nothing: string): Promise<string | undefined> => {
     const body: RequestBody = { nothing };
 
-    const result = await relay_message_with_timeout<ResponseBody>(RELAY_MESSAGE_PING, body);
+    const result = await relay_message_with_timeout<RequestBody, ResponseBody>(RELAY_MESSAGE_PING, body);
 
     if (!result) throw new Error(`can not get result from message: ${RELAY_MESSAGE_PING}`);
 

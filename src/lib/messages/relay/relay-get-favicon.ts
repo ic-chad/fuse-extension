@@ -2,13 +2,10 @@ import type { RequestBody, ResponseBody } from '~background/messages/relay-get-f
 import { RELAY_MESSAGE_GET_FAVICON } from '~lib/messages';
 import { relay_message_with_timeout } from '~lib/utils/timeout';
 
-export const relay_message_get_favicon = async (
-    origin: string,
-    timeout?: number,
-): Promise<string> => {
+export const relay_message_get_favicon = async (origin: string, timeout?: number): Promise<string> => {
     const body: RequestBody = { origin };
 
-    const result = await relay_message_with_timeout<ResponseBody>(
+    const result = await relay_message_with_timeout<RequestBody, ResponseBody>(
         RELAY_MESSAGE_GET_FAVICON,
         body,
         timeout ?? 20000,

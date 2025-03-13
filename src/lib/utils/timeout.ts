@@ -7,16 +7,16 @@ const call_with_timeout = async <T>(timeout: number, call: Promise<T>): Promise<
     ]);
 };
 
-export const message_with_timeout = async <T>(
+export const message_with_timeout = async <B, T>(
     name: string,
-    body?: any,
+    body?: B,
     timeout = 30000, // default 30s
 ): Promise<T | undefined> => {
     const s = Date.now();
     return await call_with_timeout(
         timeout,
         new Promise<T | undefined>((resolve, reject) => {
-            sendToBackground<any, T>({ name: name as never, body })
+            sendToBackground<B, T>({ name: name as never, body })
                 .then((d) => {
                     const e = Date.now();
                     console.debug(`message ${name} spend ${e - s}ms.`, [body, '->', d]);
@@ -27,9 +27,9 @@ export const message_with_timeout = async <T>(
     );
 };
 
-export const relay_message_with_timeout = async <T>(
+export const relay_message_with_timeout = async <B, T>(
     name: string,
-    body?: any,
+    body?: B,
     timeout = 30000, // default 30s
 ): Promise<T | undefined> => {
     const s = Date.now();

@@ -1,9 +1,11 @@
 import { Button } from '@heroui/react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTimeout } from 'usehooks-ts';
 
 import Icon from '~components/icon';
 import { validate_mnemonic } from '~lib/mnemonic';
 import { cn } from '~lib/utils/cn';
+import { is_development } from '~lib/utils/env';
 
 function RestoreMnemonicPage({
     className,
@@ -60,11 +62,12 @@ function RestoreMnemonicPage({
     );
 
     // auto set mnemonic when testing
-    // useEffect(() => {
-    //     setTimeout(() => {
-    //         handleMnemonic('tooth palace artefact ticket rebel limit virus dawn party pet return young');
-    //     }, 300);
-    // }, [handleMnemonic]);
+    useTimeout(() => {
+        if (is_development()) {
+            // * when dev
+            handleMnemonic('tooth palace artefact ticket rebel limit virus dawn party pet return young');
+        }
+    }, 300);
 
     return (
         <div className={cn('flex h-full w-full flex-col justify-between px-5', className)}>

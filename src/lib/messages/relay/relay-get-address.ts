@@ -9,7 +9,11 @@ export const relay_message_get_address = async (
 ): Promise<IdentityAddress | undefined> => {
     const body: RequestBody = args;
 
-    const result = await relay_message_with_timeout<ResponseBody>(RELAY_MESSAGE_GET_ADDRESS, body, timeout ?? 20000);
+    const result = await relay_message_with_timeout<RequestBody, ResponseBody>(
+        RELAY_MESSAGE_GET_ADDRESS,
+        body,
+        timeout ?? 20000,
+    );
 
     if (!result) throw new Error(`can not get result from message: ${RELAY_MESSAGE_GET_ADDRESS}`);
 

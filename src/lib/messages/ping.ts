@@ -5,7 +5,7 @@ import { message_with_timeout } from '~lib/utils/timeout';
 export const message_ping = async (nothing: string): Promise<string | undefined> => {
     const body: RequestBody = { nothing };
 
-    const result = await message_with_timeout<ResponseBody>(MESSAGE_PING, body);
+    const result = await message_with_timeout<RequestBody, ResponseBody>(MESSAGE_PING, body);
 
     if (!result) throw new Error(`can not get result from message: ${MESSAGE_PING}`);
 

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import Icon from '~components/icon';
+import { cn } from '~lib/utils/cn';
 
 export const SettingsItem = ({
     icon,

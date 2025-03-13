@@ -1,7 +1,9 @@
 import { Input } from '@heroui/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useTimeout } from 'usehooks-ts';
 
 import { cn } from '~lib/utils/cn';
+import { is_development } from '~lib/utils/env';
 
 import Icon from './icon';
 
@@ -19,13 +21,14 @@ function InputPassword({
 
     const [value, setValue] = useState('');
 
-    // TODO TEST
-    useEffect(() => {
-        setTimeout(() => {
+    // auto set password when testing
+    useTimeout(() => {
+        if (is_development()) {
+            // * when dev
             onChange('1111qqqq');
             setValue('1111qqqq');
-        }, 300);
-    }, [onChange]);
+        }
+    }, 300);
 
     return (
         <Input

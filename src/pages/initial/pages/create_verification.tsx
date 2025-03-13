@@ -1,11 +1,13 @@
 import { Button } from '@heroui/react';
 import _ from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTimeout } from 'usehooks-ts';
 
 import Icon from '~components/icon';
 import { useSonnerToast } from '~hooks/toast';
 import { pick_word_exclude_appeared } from '~lib/mnemonic';
 import { cn } from '~lib/utils/cn';
+import { is_development } from '~lib/utils/env';
 
 interface VerificationQuestion {
     index: number;
@@ -82,17 +84,18 @@ function CreateVerificationPage({
     }, [questions, answers, chosen, onNext, toast]);
 
     // auto answer when testing
-    // useEffect(() => {
-    //     if (!questions.length) return;
-    //     if (chosen) return;
-    //     setTimeout(() => {
-    //         for (const question of questions) {
-    //             const answer = question.words.indexOf(question.word);
-    //             answers[question.index] = answer;
-    //         }
-    //         setAnswers({ ...answers });
-    //     }, 500);
-    // }, [questions, answers, chosen]);
+    useTimeout(() => {
+        if (is_development()) {
+            // * when dev
+            if (!questions.length) return;
+            if (chosen) return;
+            for (const question of questions) {
+                const answer = question.words.indexOf(question.word);
+                answers[question.index] = answer;
+            }
+            setAnswers({ ...answers });
+        }
+    }, 300);
 
     return (
         <div className={cn('relative flex h-full w-full flex-col justify-between', className)}>
