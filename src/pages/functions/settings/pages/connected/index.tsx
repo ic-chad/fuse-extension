@@ -1,6 +1,6 @@
 import { Button } from '@heroui/react';
 import { useMemo } from 'react';
-import { PiLinkBreakBold } from 'react-icons/pi';
+import { LuUnlink } from 'react-icons/lu';
 
 import { FusePage } from '~components/layouts/page';
 import { FusePageTransition } from '~components/layouts/transition';
@@ -84,7 +84,7 @@ function FunctionSettingsConnectedAppPage() {
                                                     removeConnectedApp('ic', app);
                                                 }}
                                             >
-                                                <PiLinkBreakBold className="h-[18px] w-[18px] cursor-pointer text-[#999999] duration-300 hover:text-[#FFCF13]" />
+                                                <LuUnlink className="h-[18px] w-[18px] cursor-pointer text-[#999999] duration-300 hover:text-[#FFCF13]" />
                                             </div>
                                         </div>
                                     </div>
