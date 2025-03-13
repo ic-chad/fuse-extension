@@ -9,11 +9,11 @@ import { useCurrentChainID } from '../viem';
 export const useNativeTransfer = () => {
     const { current_identity_network } = useCurrentIdentity();
     const enabled = !!current_identity_network;
-    const chainID = useCurrentChainID();
+    const chainId = useCurrentChainID();
     const mutationKey = useMemo(() => {
         if (!enabled) return [];
-        return [`evm_${chainID}`, 'native', 'transfer', `from_${current_identity_network.evm.address}`];
-    }, [chainID, current_identity_network, enabled]);
+        return [`evm_${chainId}`, 'native', 'transfer', `from_${current_identity_network.evm.address}`];
+    }, [chainId, current_identity_network, enabled]);
     return useMutation({
         mutationKey,
         mutationFn: async (args: { to: `0x${string}`; amount: bigint }) => {

@@ -16,19 +16,19 @@ export interface TransactionsHistoryInfiniteArgs extends Omit<GetTransactionsHis
 }
 
 export const useWalletNativeTransactionsHistory = (args: TransactionsHistoryInfiniteArgs) => {
-    const chainID = useCurrentChainID();
+    const chainId = useCurrentChainID();
     const { current_identity } = useCurrentIdentity();
     const address = current_identity?.address.evm.address;
-    const enabled = !!chainID && !!address;
+    const enabled = !!chainId && !!address;
     const { limit, initialCursor = '' } = args;
 
     return useInfiniteQuery({
-        queryKey: [`evm_${chainID}`, 'infinite_transactions_history', address, limit],
+        queryKey: [`evm_${chainId}`, 'infinite_transactions_history', address, limit],
         queryFn: async ({ pageParam = initialCursor }) => {
-            if (!chainID || !address) {
+            if (!chainId || !address) {
                 throw new Error('Chain ID or address is not set');
             }
-            return getWalletNativeTransactionsHistory(chainID, {
+            return getWalletNativeTransactionsHistory(chainId, {
                 address,
                 limit,
                 cursor: pageParam, // Use cursor as pagination parameter
@@ -46,20 +46,20 @@ export const useWalletNativeTransactionsHistory = (args: TransactionsHistoryInfi
 };
 
 export const useWalletErc20TransactionsHistory = (args: TransactionsHistoryInfiniteArgs) => {
-    const chainID = useCurrentChainID();
+    const chainId = useCurrentChainID();
     const { current_identity } = useCurrentIdentity();
     const address = current_identity?.address.evm.address;
-    const enabled = !!chainID && !!address;
+    const enabled = !!chainId && !!address;
     const { limit, initialCursor = '' } = args;
 
     return useInfiniteQuery({
-        queryKey: [`evm_${chainID}`, 'infinite_erc20_transfers', address, limit],
+        queryKey: [`evm_${chainId}`, 'infinite_erc20_transfers', address, limit],
         queryFn: async ({ pageParam = initialCursor }) => {
-            if (!chainID || !address) {
+            if (!chainId || !address) {
                 throw new Error('Chain ID or address is not set');
             }
 
-            return getWalletErc20TransactionsHistory(chainID, {
+            return getWalletErc20TransactionsHistory(chainId, {
                 address,
                 limit,
                 cursor: pageParam,
@@ -80,14 +80,14 @@ export const useWalletErc20TransactionsHistory = (args: TransactionsHistoryInfin
  * @param options - Query options (enabled, refetchInterval, etc.)
  */
 export const useTokenPrice = (address: Address, options = {}) => {
-    const chainID = useCurrentChainID();
-    const enabled = !!chainID && !!address;
+    const chainId = useCurrentChainID();
+    const enabled = !!chainId && !!address;
 
     return useQuery({
-        queryKey: [`evm_${chainID}`, 'token_price', address],
+        queryKey: [`evm_${chainId}`, 'token_price', address],
         queryFn: () => {
-            if (!chainID || !address) throw new Error('Chain ID or address is not set');
-            return getErc20TokenPrice(chainID, address);
+            if (!chainId || !address) throw new Error('Chain ID or address is not set');
+            return getErc20TokenPrice(chainId, address);
         },
         enabled,
         ...options,
@@ -100,15 +100,15 @@ export const useTokenPrice = (address: Address, options = {}) => {
  * @param options - Query options (enabled, refetchInterval, etc.)
  */
 export const useMultipleTokenPrices = (addresses: Address[], options = {}) => {
-    const chainID = useCurrentChainID();
-    const enabled = !!chainID && addresses.length > 0;
+    const chainId = useCurrentChainID();
+    const enabled = !!chainId && addresses.length > 0;
 
     return useQuery({
-        queryKey: [`evm_${chainID}`, 'multiple_token_prices', addresses],
+        queryKey: [`evm_${chainId}`, 'multiple_token_prices', addresses],
         queryFn: () => {
-            if (!chainID) throw new Error('Chain ID is not set');
+            if (!chainId) throw new Error('Chain ID is not set');
             return getMultipleErc20TokenPrices(
-                chainID,
+                chainId,
                 addresses.map((addr) => ({ tokenAddress: addr })),
             );
         },

@@ -59,6 +59,7 @@ function InnerHomePage({
         for (const token of current_tokens) {
             match_combined_token_info(token.info, {
                 ic: (ic) => canisters.push(ic.canister_id),
+                evm: (evm) => canisters.push(evm.address),
             });
         }
         return canisters;
@@ -104,6 +105,12 @@ function InnerHomePage({
                             usd_24h = usd_24h.plus(old_b);
                         }
                     }
+                },
+                evm: (evm) => {
+                    const index = canisters.findIndex((c) => c == evm.address);
+                    if (index < 0) return;
+                    const balance = '0';
+                    if (!balance) return;
                 },
             });
         }

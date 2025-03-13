@@ -53,14 +53,14 @@ export const is_same_token_info = (a: TokenInfo, b: TokenInfo): boolean => {
         evm: (evm) =>
             match_combined_token_info(b.info, {
                 ic: () => false,
-                evm: (evm2) => evm.address === evm2.address && evm.chainID === evm2.chainID,
+                evm: (evm2) => evm.address === evm2.address && evm.chainId === evm2.chainId,
             }),
     });
 };
 export const get_token_unique_id = (token: TokenInfo): string => {
     return match_combined_token_info(token.info, {
         ic: (ic) => `ic#${ic.canister_id}`,
-        evm: (evm) => `evm#${evm.chainID}#${evm.address}`,
+        evm: (evm) => `evm#${evm.chainId}#${evm.address}`,
     });
 };
 export const get_token_name = (token: TokenInfo): string => {

@@ -2,7 +2,7 @@ import { bsc, mainnet, sepolia } from 'viem/chains';
 
 // Token type definition
 export interface EvmTokenInfo {
-    chainID: number;
+    chainId: number;
     address: `0x${string}`;
     name: string;
     symbol: string;
@@ -25,12 +25,20 @@ export const POPULAR_TOKENS: TokenList = {
     // Ethereum Mainnet (chainId: 1)
     [mainnet.id]: [
         {
+            address: '0x0000000000000000000000000000000000000000',
+            name: 'Ether',
+            symbol: 'ETH',
+            decimals: 18,
+            chainId: mainnet.id,
+            isNative: true,
+        },
+        {
             address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
             name: 'Wrapped Ether',
             symbol: 'WETH',
             decimals: 18,
             logoURI: evm_get_logo_uri('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', mainnet.id),
-            chainID: mainnet.id,
+            chainId: mainnet.id,
         },
         {
             address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -38,7 +46,7 @@ export const POPULAR_TOKENS: TokenList = {
             symbol: 'USDC',
             decimals: 6,
             logoURI: evm_get_logo_uri('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', mainnet.id),
-            chainID: mainnet.id,
+            chainId: mainnet.id,
         },
         {
             address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -46,7 +54,7 @@ export const POPULAR_TOKENS: TokenList = {
             symbol: 'USDT',
             decimals: 6,
             logoURI: evm_get_logo_uri('0xdAC17F958D2ee523a2206206994597C13D831ec7', mainnet.id),
-            chainID: mainnet.id,
+            chainId: mainnet.id,
         },
         // More tokens...
     ],
@@ -59,7 +67,7 @@ export const POPULAR_TOKENS: TokenList = {
             symbol: 'WBNB',
             decimals: 18,
             logoURI: evm_get_logo_uri('0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', bsc.id),
-            chainID: bsc.id,
+            chainId: bsc.id,
         },
         // More tokens...
     ],
@@ -72,7 +80,7 @@ export const POPULAR_TOKENS: TokenList = {
             symbol: 'WETH',
             decimals: 18,
             logoURI: evm_get_logo_uri('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', sepolia.id), // Using mainnet logo
-            chainID: sepolia.id,
+            chainId: sepolia.id,
         },
         {
             address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
@@ -80,7 +88,7 @@ export const POPULAR_TOKENS: TokenList = {
             symbol: 'USDC',
             decimals: 6,
             logoURI: evm_get_logo_uri('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', sepolia.id), // Using mainnet logo
-            chainID: sepolia.id,
+            chainId: sepolia.id,
         },
         {
             address: '0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0',
@@ -88,7 +96,7 @@ export const POPULAR_TOKENS: TokenList = {
             symbol: 'USDT',
             decimals: 6,
             logoURI: evm_get_logo_uri('0xdAC17F958D2ee523a2206206994597C13D831ec7', sepolia.id), // Using mainnet logo
-            chainID: sepolia.id,
+            chainId: sepolia.id,
         },
         {
             address: '0x779877A7B0D9E8603169DdbD7836e478b4624789',
@@ -96,7 +104,7 @@ export const POPULAR_TOKENS: TokenList = {
             symbol: 'LINK',
             decimals: 18,
             logoURI: evm_get_logo_uri('0x514910771AF9Ca656af840dff83E8264EcF986CA', sepolia.id), // Using mainnet logo
-            chainID: sepolia.id,
+            chainId: sepolia.id,
         },
         {
             address: '0x8267cF9254734C6Eb452a7bb9AAF97B392258b21',
@@ -104,7 +112,7 @@ export const POPULAR_TOKENS: TokenList = {
             symbol: 'DAI',
             decimals: 18,
             logoURI: evm_get_logo_uri('0x6B175474E89094C44Da98b954EedeAC495271d0F', sepolia.id), // Using mainnet logo
-            chainID: sepolia.id,
+            chainId: sepolia.id,
         },
     ],
 };
