@@ -205,9 +205,14 @@ export const useEstimateNativeTransferGas = (
                 value: 0n,
                 data,
             });
-            const gasPrice = await publicClient.getGasPrice();
-            const estimatedFee = gasLimit * gasPrice;
-            return { gasLimit, gasPrice, estimatedFee };
+            const eip1559 = await publicClient.estimateFeesPerGas();
+            const worse_case_gas_price = eip1559.maxFeePerGas;
+            const estimatedFee = gasLimit * worse_case_gas_price;
+            return {
+                gasLimit,
+                eip1559,
+                estimatedFee,
+            };
         },
         enabled,
         refetchInterval: 5_000,

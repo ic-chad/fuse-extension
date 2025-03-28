@@ -349,3 +349,41 @@ export const getTokenDetail = async (chainId: number, address: Address, isNative
         throw error;
     }
 };
+
+export interface GasFeeEstimate {
+    suggestedMaxPriorityFeePerGas: string;
+    suggestedMaxFeePerGas: string;
+    minWaitTimeEstimate: number;
+    maxWaitTimeEstimate: number;
+}
+
+export interface SuggestedGasFees {
+    low: GasFeeEstimate;
+    medium: GasFeeEstimate;
+    high: GasFeeEstimate;
+    estimatedBaseFee: string;
+    networkCongestion: number;
+    latestPriorityFeeRange: string[];
+    historicalPriorityFeeRange: string[];
+    historicalBaseFeeRange: string[];
+    priorityFeeTrend: 'up' | 'down';
+    baseFeeTrend: 'up' | 'down';
+    version: string;
+}
+
+export const getSuggestedGasFees = async (chainId: number): Promise<SuggestedGasFees> => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/suggested-gas-fees?chainId=${chainId}`);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        const result: SuggestedGasFees = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error fetching suggested gas fees:', error);
+        throw error;
+    }
+};

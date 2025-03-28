@@ -3,15 +3,19 @@ import { Button } from '@heroui/react';
 import BigNumber from 'bignumber.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import { formatEther, formatUnits, type Address } from 'viem';
+import { AiFillCar } from 'react-icons/ai';
+import { BsLightning } from 'react-icons/bs';
+import { PiBicycle } from 'react-icons/pi';
+import { formatEther, formatUnits, parseUnits, type Address } from 'viem';
 
 import Icon from '~components/icon';
+import { useSuggestedGasFees } from '~hooks/apis/evm';
 import { useERC20ReadContractBalanceOf } from '~hooks/evm/contracts/erc20/read';
 import { useERC20Transfer, useEstimateErc20TransferGasFee } from '~hooks/evm/contracts/erc20/write';
 import { useNativeBalance } from '~hooks/evm/native/read';
 import { useNativeTransfer } from '~hooks/evm/native/write';
 import { get_viem_chain_by_chain, useEstimateNativeTransferGas } from '~hooks/evm/viem';
-import type { GotoFunction } from '~hooks/memo/goto';
+import { useGoto, type GotoFunction } from '~hooks/memo/goto';
 import { useCurrentIdentity } from '~hooks/store/local-secure';
 import { useSonnerToast } from '~hooks/toast';
 import { cn } from '~lib/utils/cn';
@@ -58,7 +62,7 @@ function FunctionTransferTokenEvmAmountPage({
         if (!amount) return '0.00';
     }, [current_token, amount]);
 
-    const [current_free, setCurrentFee] = useState<NetworkFee>();
+    const [current_fee, setCurrentFee] = useState<NetworkFee>();
 
     const sendRef = useRef<HTMLInputElement>(null);
 
@@ -66,7 +70,7 @@ function FunctionTransferTokenEvmAmountPage({
         sendRef.current?.focus();
     }, [sendRef]);
 
-    const freeFef = useRef<HTMLDivElement>(null);
+    const feeFef = useRef<HTMLDivElement>(null);
     const { symbol, chain, isNative, decimals, address } = get_evm_token_info(info.token.info);
     const { current_identity_network } = useCurrentIdentity();
     const self = match_chain(chain, {
@@ -113,6 +117,7 @@ function FunctionTransferTokenEvmAmountPage({
             ? BigNumber(balance?.toString() ?? '0').minus(new BigNumber(fee ?? '0'))
             : BigNumber(balance?.toString() ?? '0');
         if (max_amount_bn.isNegative()) return BigNumber(0);
+
         return max_amount_bn;
     }, [balance, fee, decimals]);
 
@@ -141,6 +146,18 @@ function FunctionTransferTokenEvmAmountPage({
 
     const estimated_gas_fee = isNative ? native_transfer_fee : erc20_gas_fee;
     const is_estimating = isNative ? is_estimated_native_gas_fee : is_estimated_erc20_gas_fee;
+
+    const [customGasLimit, setCustomGasLimit] = useState<string>();
+    const final_gas = {
+        gas: customGasLimit ? BigInt(customGasLimit) : estimated_gas_fee?.gasLimit,
+        maxFeePerGas: current_fee
+            ? parseUnits(current_fee.details.suggestedMaxFeePerGas, 9)
+            : estimated_gas_fee?.eip1559.maxFeePerGas,
+        maxPriorityFeePerGas: current_fee
+            ? parseUnits(current_fee.details.suggestedMaxPriorityFeePerGas, 9)
+            : estimated_gas_fee?.eip1559.maxPriorityFeePerGas,
+    };
+    const { navigate } = useGoto();
     const onConfirm = useCallback(async () => {
         try {
             if (is_transferring) return;
@@ -149,20 +166,28 @@ function FunctionTransferTokenEvmAmountPage({
             if (!is_enough_native) throw new Error('Insufficient native balance');
             const parsed_amount_bn = validate_transfer_amount(parsed_amount, max_amount);
             if (isNative) {
-                await transfer_native({ to, amount: BigInt(parsed_amount_bn.toFixed()), data: hex });
+                await transfer_native({ to, amount: BigInt(parsed_amount_bn.toFixed()), data: hex, ...final_gas });
             } else {
-                await transfer_erc20(address, to, BigInt(parsed_amount_bn.toFixed()));
+                await transfer_erc20({
+                    tokenAddress: address,
+                    to,
+                    amount: BigInt(parsed_amount_bn.toFixed()),
+                    ...final_gas,
+                });
             }
+            toast.success('Transaction Submitted');
+            navigate('/home/token/evm', { state: info });
         } catch (error: any) {
             toast.error(error.message);
         }
-    }, [is_transferring, to, parsed_amount, max_amount, transfer_native, is_enough_native, hex]);
+    }, [is_transferring, to, parsed_amount, max_amount, transfer_native, is_enough_native, hex, final_gas]);
 
     const chainInfo = get_viem_chain_by_chain(chain);
+
     if (!address || !to) return <></>;
 
     return (
-        <div ref={freeFef} className="flex h-full w-full flex-col justify-between overflow-hidden">
+        <div ref={feeFef} className="flex h-full w-full flex-col justify-between overflow-hidden">
             <div className="flex w-full flex-1 flex-col px-5">
                 <div className="my-5 flex w-full justify-center">
                     <img
@@ -247,18 +272,22 @@ function FunctionTransferTokenEvmAmountPage({
                             isNative ? 'border-b border-[#333333]' : 'rounded-b-xl',
                         )}
                     >
-                        <div className="text-sm text-[#999999]">Estimated Network Fee</div>
+                        <div className="text-sm text-[#999999]">Network Fee</div>
                         <NetworkFeeDrawer
-                            current_free={current_free}
+                            chain={chain}
+                            current_fee={current_fee}
                             setCurrentFee={setCurrentFee}
+                            estimated_gas_limit={estimated_gas_fee?.gasLimit}
                             trigger={
                                 <div className="mt-3 flex w-full cursor-pointer items-center justify-between gap-x-3">
                                     <div className="flex-1">
                                         <div className="flex w-full items-center gap-2 text-sm text-[#eee]">
                                             <img src={logo} className="h-4 w-4 rounded-full" />
                                             <span>
-                                                {formatEther(estimated_gas_fee?.estimatedFee ?? 0n)}{' '}
-                                                {chainInfo.nativeCurrency.symbol} ($0.03697)
+                                                {is_estimating
+                                                    ? '--'
+                                                    : formatEther(estimated_gas_fee?.estimatedFee ?? 0n)}{' '}
+                                                {chainInfo.nativeCurrency.symbol}
                                             </span>
                                         </div>
                                     </div>
@@ -270,7 +299,9 @@ function FunctionTransferTokenEvmAmountPage({
                                     </div>
                                 </div>
                             }
-                            container={freeFef.current}
+                            container={feeFef.current}
+                            customGasLimit={customGasLimit}
+                            setCustomGasLimit={setCustomGasLimit}
                         />
                     </div>
                     {isNative && (
@@ -315,7 +346,7 @@ function FunctionTransferTokenEvmAmountPage({
                     //     new BigNumber(showBalance ?? '0').lt(new BigNumber(amount).plus(new BigNumber(showFee ?? '0')))
                     // }
                     onPress={onConfirm}
-                    isLoading={is_transferring}
+                    isLoading={is_transferring || is_estimating}
                 >
                     Confirm
                 </Button>

@@ -4,6 +4,7 @@ import type { Address } from 'viem';
 import {
     getErc20TokenPrice,
     getMultipleErc20TokenPrices,
+    getSuggestedGasFees,
     getTokenDetail,
     getWalletErc20TransactionsHistory,
     getWalletNativeTransactionsHistory,
@@ -179,5 +180,20 @@ export const useTokenDetail = (args: { address: Address; chain: EvmChain; isNati
         enabled,
         staleTime: Infinity,
         ...options,
+    });
+};
+
+export const useSuggestedGasFees = (chain: EvmChain) => {
+    const identity_network = useEvmChainIdentityNetworkByChain(chain);
+    const identity_key = identity_network && get_identity_network_key(identity_network);
+    const chainId = identity_network?.network.chain_id;
+    const enabled = !!identity_key && !!chainId;
+    return useQuery({
+        queryKey: [identity_key, 'suggested_gas_fees', chainId],
+        queryFn: () => {
+            if (!chainId) throw new Error('Chain ID is not set');
+            return getSuggestedGasFees(chainId);
+        },
+        enabled,
     });
 };

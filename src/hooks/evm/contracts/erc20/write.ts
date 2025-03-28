@@ -24,12 +24,23 @@ export function useERC20Transfer(chain: EvmChain) {
      * @param to Recipient address
      * @param amount Amount to transfer (in smallest unit, e.g. wei)
      */
-    const transfer = (tokenAddress: Address, to: Address, amount: bigint) => {
+    const transfer = (args: {
+        tokenAddress: Address;
+        to: Address;
+        amount: bigint;
+        maxFeePerGas?: bigint;
+        maxPriorityFeePerGas?: bigint;
+        gasLimit?: bigint;
+    }) => {
+        const { tokenAddress, to, amount, gasLimit, maxFeePerGas, maxPriorityFeePerGas } = args;
         return mutateAsync({
             address: tokenAddress,
             abi: erc20Abi,
             functionName: 'transfer',
             args: [to, amount],
+            gas: gasLimit,
+            maxPriorityFeePerGas,
+            maxFeePerGas,
         });
     };
 
@@ -108,11 +119,12 @@ export const useEstimateErc20TransferGasFee = (
             }),
         });
 
-        const gasPrice = await publicClient.getGasPrice();
+        const eip1559 = await publicClient.estimateFeesPerGas();
+        const worse_case_gas_price = eip1559.maxFeePerGas;
         const bufferedGasLimit = (gasLimit * 120n) / 100n;
-        const estimatedFee = bufferedGasLimit * gasPrice;
+        const estimatedFee = bufferedGasLimit * worse_case_gas_price;
 
-        return { gasLimit: bufferedGasLimit, gasPrice, estimatedFee };
+        return { gasLimit: bufferedGasLimit, eip1559, estimatedFee };
     };
     const enabled =
         !!publicClient &&

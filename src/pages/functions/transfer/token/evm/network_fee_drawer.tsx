@@ -1,12 +1,14 @@
-// import { Button } from '@heroui/react';
-import { Button } from '@heroui/react';
-import { useEffect, useState } from 'react';
+import BigNumber from 'bignumber.js';
+import { useEffect, useMemo, useState } from 'react';
 import { AiFillCar } from 'react-icons/ai';
 import { BsLightning } from 'react-icons/bs';
 import { IoSettingsOutline } from 'react-icons/io5';
 import { PiBicycle, PiWarningCircle } from 'react-icons/pi';
+import { formatUnits, parseEther, parseUnits } from 'viem';
 
+import type { GasFeeEstimate, SuggestedGasFees } from '~apis/evm';
 import InputCustom from '~components/input-custom';
+import { Button } from '~components/ui/button';
 import { Checkbox } from '~components/ui/checkbox';
 import {
     Drawer,
@@ -17,78 +19,40 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from '~components/ui/drawer';
+import { useSuggestedGasFees } from '~hooks/apis/evm';
+import { get_viem_chain_by_chain } from '~hooks/evm/viem';
+import { useSonnerToast } from '~hooks/toast';
 // import { useSonnerToast } from '~hooks/toast';
 import { cn } from '~lib/utils/cn';
+import { format_number_smart } from '~pages/functions/token/evm';
+import type { EvmChain } from '~types/chain';
 
 export interface NetworkFee {
-    id: number;
     icon: string | React.ReactNode;
-    name: string;
-    time: string;
-    gwei: string;
-    from: string;
-    to: string;
+    name: 'Slow' | 'Average' | 'Fast' | 'Custom';
+    details: GasFeeEstimate;
     className?: string;
 }
-
-const feeList: NetworkFee[] = [
-    {
-        id: 1,
-        // icon: 'icon-slow',
-        icon: <PiBicycle className="h-8 w-8 text-[#F15A24]" />,
-        name: 'Slow',
-        time: '1 min',
-        gwei: '0.90',
-        from: '0.00001882ETH',
-        to: '0.03',
-        className: 'text-[#F15A24]',
-    },
-    {
-        id: 2,
-        icon: <AiFillCar className="h-8 w-8 text-[#32B1FB]" />,
-        name: 'Average',
-        time: '30 sec',
-        gwei: '0.90',
-        from: '0.00001882ETH',
-        to: '0.03',
-        className: 'text-[#32B1FB]',
-    },
-    {
-        id: 3,
-        // icon: 'icon-fast',
-        icon: <BsLightning className="h-8 w-8 text-[#07C160]" />,
-        name: 'Fast',
-        time: '15 sec',
-        gwei: '2.40',
-        from: '0.00001882ETH',
-        to: '0.03',
-        className: 'text-[#07C160]',
-    },
-];
 
 export const NetworkFeeDrawer = ({
     trigger,
     container,
-    current_free,
+    current_fee,
     setCurrentFee,
+    estimated_gas_limit,
+    chain,
+    customGasLimit,
+    setCustomGasLimit,
 }: {
     trigger: React.ReactNode;
     container?: HTMLElement | null;
-    current_free: NetworkFee | undefined;
+    current_fee: NetworkFee | undefined;
     setCurrentFee: (fee: NetworkFee) => void;
+    chain: EvmChain;
+    estimated_gas_limit?: bigint;
+    customGasLimit?: string;
+    setCustomGasLimit: (v: string) => void;
 }) => {
-    const custom = {
-        id: 4,
-        icon: <IoSettingsOutline className="h-8 w-8 text-[#999]" />,
-        name: 'Custom',
-        time: '< 30 sec',
-        gwei: '0.90',
-        from: '0.00001882ETH',
-        to: '0.03',
-        priorityFee: '0.50',
-        maxFee: '0.50',
-        gasLimit: '21000',
-    };
     const [open, setOpen] = useState(false);
     const [showCustom, setShowCustom] = useState(false);
 
@@ -98,16 +62,64 @@ export const NetworkFeeDrawer = ({
         };
     }, [open]);
 
-    const checkFee = (item: NetworkFee) => {
+    const { data: suggested_gas_fees } = useSuggestedGasFees(chain);
+    const { fee_list, default_custom } = useMemo<{ fee_list?: NetworkFee[]; default_custom?: NetworkFee }>(
+        () => ({
+            fee_list: suggested_gas_fees
+                ? [
+                      {
+                          icon: <PiBicycle className="h-8 w-8 text-[#F15A24]" />,
+                          name: 'Slow',
+                          details: suggested_gas_fees.low,
+                          className: 'text-[#F15A24]',
+                      },
+                      {
+                          icon: <AiFillCar className="h-8 w-8 text-[#32B1FB]" />,
+                          name: 'Average',
+                          details: suggested_gas_fees.medium,
+                          className: 'text-[#32B1FB]',
+                      },
+                      {
+                          icon: <BsLightning className="h-8 w-8 text-[#07C160]" />,
+                          name: 'Fast',
+                          details: suggested_gas_fees.high,
+                          className: 'text-[#07C160]',
+                      },
+                  ]
+                : undefined,
+            default_custom: suggested_gas_fees
+                ? {
+                      icon: <IoSettingsOutline className="h-8 w-8 text-[#999]" />,
+                      name: 'Custom',
+                      details: suggested_gas_fees.medium,
+                  }
+                : undefined,
+        }),
+        [suggested_gas_fees],
+    );
+    const chain_info = get_viem_chain_by_chain(chain);
+    const [customMaxBaseFee, setCustomMaxBaseFee] = useState<string>();
+    const [customMaxPriorityFee, setCustomMaxPriorityFee] = useState<string>();
+    const [custom, setCustom] = useState<NetworkFee>();
+    const final_custom = custom ?? default_custom;
+
+    const checkFee = (item?: NetworkFee) => {
+        if (!item) return;
         setCurrentFee(item);
 
-        if (item.id === 4) {
+        if (item.name === 'Custom') {
+            setCustomMaxBaseFee(
+                BigNumber(default_custom?.details.suggestedMaxFeePerGas ?? '0')
+                    .minus(BigNumber(default_custom?.details.suggestedMaxPriorityFeePerGas ?? '0'))
+                    .toFixed(),
+            );
+            setCustomMaxPriorityFee(default_custom?.details.suggestedMaxPriorityFeePerGas ?? '0');
+            setCustomGasLimit(estimated_gas_limit?.toString() ?? '');
             setShowCustom(true);
             return;
         }
         setShowCustom(false);
     };
-
     return (
         <Drawer open={open} onOpenChange={setOpen} container={container}>
             <DrawerTrigger>{trigger}</DrawerTrigger>
@@ -132,13 +144,13 @@ export const NetworkFeeDrawer = ({
                 <div className="flex h-full w-full shrink flex-col justify-between bg-[#0a0600] px-5 pb-5">
                     <div className="mt-3 h-full w-full overflow-y-auto pb-10">
                         <div className="mt-5 flex w-full flex-col gap-4">
-                            {feeList.map((item, idx) => (
+                            {fee_list?.map((item, idx) => (
                                 <div
                                     key={`${item.name}-${idx}`}
                                     className={cn(
                                         'flex w-full cursor-pointer items-center rounded-xl border border-[#333] bg-[#0A0600] px-4 py-3 duration-300 hover:bg-[#333333]',
-                                        current_free && current_free.id === item.id && 'border-[#FFCF13]',
-                                        !current_free && item.id === 2 && 'border-[#FFCF13]',
+                                        current_fee && current_fee.name === item.name && 'border-[#FFCF13]',
+                                        !current_fee && item.name === 'Average' && 'border-[#FFCF13]',
                                     )}
                                     onClick={() => checkFee(item)}
                                 >
@@ -146,12 +158,29 @@ export const NetworkFeeDrawer = ({
                                     <div className="flex-1">
                                         <div className="flex w-full justify-between">
                                             <div className="text-base text-[#EEEEEE]">{item.name}</div>
-                                            <p className="text-base text-[#eee]">{item.time}</p>
+                                            <p className="text-base text-[#eee]">
+                                                {'< '}
+                                                {item.details?.maxWaitTimeEstimate
+                                                    ? item.details?.maxWaitTimeEstimate / 1000
+                                                    : '--'}{' '}
+                                                secs
+                                            </p>
                                         </div>
                                         <div className="flex w-full justify-between">
-                                            <div className="text-xs text-[#999]">{item.gwei}Gwei</div>
+                                            <div className="text-xs text-[#999]">
+                                                {'Priority Fee:'}{' '}
+                                                {format_number_smart(item.details?.suggestedMaxPriorityFeePerGas ?? 0)}{' '}
+                                                Gwei
+                                            </div>
                                             <p className="text-xs text-[#999999]">
-                                                {item.from}≈${item.to}
+                                                {format_number_smart(
+                                                    formatUnits(
+                                                        parseUnits(item.details?.suggestedMaxFeePerGas ?? '0', 9) *
+                                                            (estimated_gas_limit ?? BigInt(0)),
+                                                        18,
+                                                    ),
+                                                )}{' '}
+                                                {chain_info.nativeCurrency.symbol}
                                             </p>
                                         </div>
                                     </div>
@@ -161,21 +190,38 @@ export const NetworkFeeDrawer = ({
                             <div
                                 className={cn(
                                     'flex w-full cursor-pointer flex-col rounded-xl border border-[#333] bg-[#0A0600] px-4 py-3 duration-300',
-                                    current_free && current_free.id === 4 && 'border-[#FFCF13]',
+                                    current_fee && current_fee.name === 'Custom' && 'border-[#FFCF13]',
                                 )}
-                                onClick={() => checkFee(custom)}
                             >
-                                <div className="flex w-full cursor-pointer items-center">
-                                    <div className="mr-4 flex h-9 w-9 items-center justify-center">{custom.icon}</div>
+                                <div
+                                    className="flex w-full cursor-pointer items-center"
+                                    onClick={() => checkFee(final_custom)}
+                                >
+                                    <div className="mr-4 flex h-9 w-9 items-center justify-center">
+                                        {final_custom?.icon}
+                                    </div>
                                     <div className="flex-1">
                                         <div className="flex w-full justify-between">
-                                            <div className="text-base text-[#EEEEEE]">{custom.name}</div>
-                                            <p className="text-base text-[#eee]">{custom.time}</p>
+                                            <div className="text-base text-[#EEEEEE]">{final_custom?.name}</div>
+                                            <p className="text-base text-[#eee]">
+                                                {'< '} {(final_custom?.details?.maxWaitTimeEstimate ?? 0) / 1000} secs
+                                            </p>
                                         </div>
                                         <div className="flex w-full justify-between">
-                                            <div className="text-xs text-[#999]">{custom.gwei}Gwei</div>
+                                            <div className="text-xs text-[#999]">
+                                                {final_custom?.details?.suggestedMaxPriorityFeePerGas} Gwei
+                                            </div>
                                             <p className="text-xs text-[#999999]">
-                                                {custom.from}≈${custom.to}
+                                                {format_number_smart(
+                                                    formatUnits(
+                                                        parseUnits(
+                                                            final_custom?.details?.suggestedMaxFeePerGas ?? '0',
+                                                            9,
+                                                        ) * (estimated_gas_limit ?? BigInt(0)),
+                                                        18,
+                                                    ),
+                                                )}{' '}
+                                                {chain_info.nativeCurrency.symbol}
                                             </p>
                                         </div>
                                     </div>
@@ -183,19 +229,31 @@ export const NetworkFeeDrawer = ({
                                 {showCustom && (
                                     <div className="mt-2 w-full border-t border-[#333]">
                                         <div className="mt-2 w-full">
-                                            <div className="flex w-full items-center justify-between text-sm text-[#eee]">
+                                            <div className="flex w-full items-center justify-start text-sm text-[#eee]">
                                                 <div>Max base fee</div>
-                                                <div className="text-xs text-[#999]">
-                                                    Base fee required: <span className="text-#eee">{custom.gwei}</span>{' '}
+                                                {/* <div className="text-xs text-[#999]">
+                                                    Base fee required:{' '}
+                                                    <span className="text-#eee">
+                                                        {final_custom.details?.suggestedMaxFeePerGas}
+                                                    </span>{' '}
                                                     Gwei
-                                                </div>
+                                                </div> */}
                                             </div>
                                             <InputCustom
                                                 className="mt-2"
                                                 extra={<div className="text-xs text-[#999]">Gwei</div>}
-                                                initValue={custom.maxFee}
+                                                value={customMaxBaseFee}
                                                 onChange={(value) => {
-                                                    custom.maxFee = value;
+                                                    const regex = new RegExp(`^(0|[1-9]\\d*)(\\.\\d{0,${9}})?$`);
+                                                    if (
+                                                        value === '' ||
+                                                        value === '0' ||
+                                                        value === '.' ||
+                                                        regex.test(value)
+                                                    ) {
+                                                        setCustomMaxBaseFee(value);
+                                                        return;
+                                                    }
                                                 }}
                                                 placeholder="Max base fee"
                                             />
@@ -208,9 +266,18 @@ export const NetworkFeeDrawer = ({
                                             <InputCustom
                                                 className="mt-2"
                                                 extra={<div className="text-xs text-[#999]">Gwei</div>}
-                                                initValue={custom.priorityFee}
+                                                value={customMaxPriorityFee}
                                                 onChange={(value) => {
-                                                    custom.priorityFee = value;
+                                                    const regex = new RegExp(`^(0|[1-9]\\d*)(\\.\\d{0,${9}})?$`);
+                                                    if (
+                                                        value === '' ||
+                                                        value === '0' ||
+                                                        value === '.' ||
+                                                        regex.test(value)
+                                                    ) {
+                                                        setCustomMaxPriorityFee(value);
+                                                        return;
+                                                    }
                                                 }}
                                                 placeholder="Priority fee"
                                             />
@@ -222,14 +289,19 @@ export const NetworkFeeDrawer = ({
                                             </div>
                                             <InputCustom
                                                 className="mt-2"
-                                                initValue={custom.gasLimit}
+                                                value={customGasLimit}
                                                 onChange={(value) => {
-                                                    custom.gasLimit = value;
+                                                    // Integer
+                                                    const regex = /^[1-9]\d*$/;
+                                                    if (value === '' || regex.test(value)) {
+                                                        setCustomGasLimit(value);
+                                                    }
                                                 }}
-                                                placeholder="Max base fee"
+                                                placeholder="Gas limit"
                                             />
                                         </div>
-
+                                        {/* // TODO */}
+                                        {/* 
                                         <div className="mt-3 flex w-full items-center space-x-2">
                                             <Checkbox id="terms" className="border-[#333]" />
                                             <label
@@ -238,13 +310,35 @@ export const NetworkFeeDrawer = ({
                                             >
                                                 Set as default for all future transactions onEthereum
                                             </label>
-                                        </div>
+                                        </div> */}
 
                                         <div className="mt-3 w-full">
                                             <Button
-                                                className="h-[48px] w-full bg-[#FFCF13] text-lg font-semibold text-black"
-                                                disabled={!custom.gasLimit || !custom.maxFee || !custom.priorityFee}
-                                                onPress={() => setShowCustom(false)}
+                                                className="h-[48px] w-full bg-[#FFCF13] text-lg font-semibold text-black hover:bg-[#FFCF13]/70 disabled:bg-[#FFCF13]/40"
+                                                disabled={
+                                                    BigNumber(customMaxBaseFee ?? '').isNaN() ||
+                                                    BigNumber(customMaxPriorityFee ?? '').isNaN() ||
+                                                    BigNumber(customGasLimit ?? '').isNaN()
+                                                }
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (!default_custom) return;
+                                                    const fee = {
+                                                        ...default_custom,
+                                                        details: {
+                                                            ...default_custom.details,
+                                                            suggestedMaxPriorityFeePerGas: BigNumber(
+                                                                customMaxPriorityFee ?? '0',
+                                                            ).toFixed(),
+                                                            suggestedMaxFeePerGas: BigNumber(customMaxBaseFee ?? '0')
+                                                                .plus(BigNumber(customMaxPriorityFee ?? '0'))
+                                                                .toFixed(),
+                                                        },
+                                                    };
+                                                    setCustom(fee);
+                                                    setCurrentFee(fee);
+                                                    setShowCustom(false);
+                                                }}
                                             >
                                                 Confirm
                                             </Button>

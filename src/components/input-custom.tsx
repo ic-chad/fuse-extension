@@ -4,22 +4,20 @@ import { useState } from 'react';
 import { cn } from '~lib/utils/cn';
 
 function InputCustom({
-    initValue,
     placeholder,
     errorMessage,
     onChange,
     extra,
     className = '',
+    value,
 }: {
-    initValue?: string;
     placeholder?: string;
     errorMessage?: string;
     onChange: (value: string) => void;
     extra?: React.ReactNode;
     className?: string;
+    value?: string;
 }) {
-    const [value, setValue] = useState(initValue);
-
     return (
         <Input
             className={cn('w-full', className)}
@@ -51,7 +49,6 @@ function InputCustom({
             onChange={(e) => {
                 const value = e.target.value;
                 onChange(value);
-                setValue(value);
             }}
             value={value}
             size="lg"
